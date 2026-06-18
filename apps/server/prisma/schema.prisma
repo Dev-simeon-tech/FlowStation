@@ -1,0 +1,212 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ORGANISATION (Gas Station)
+// ============================================
+model Organisation {
+  id        Int      @id @default(autoincrement())
+  name      String // "Total Energies GRA"
+  address   String
+  phone     String
+  password  String
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  fuelProducts   FuelProduct[]
+  suppliers      Supplier[]
+  fuelStocks     FuelStock[]
+  attendants     Attendant[]
+  customers      Customer[]
+  sales          FuelSale[]
+  payments       Payment[]
+  dailySummaries DailySummary[]
+}
+
+// ============================================
+// FUEL PRODUCT
+// ============================================
+model FuelProduct {
+  id             Int      @id @default(autoincrement())
+  organisationId Int
+  name           String // "Premium Motor Spirit"
+  type           FuelType
+  pricePerLitre  Float
+  unit           String   @default("litre")
+  createdAt      DateTime @default(now())
+
+  organisation  Organisation       @relation(fields: [organisationId], references: [id])
+  stocks        FuelStock[]
+  sales         FuelSale[]
+  summaries     DailySummary[]
+  supplierLinks SupplierFuelType[]
+}
+
+enum FuelType {
+  PETROL
+  DIESEL
+  KEROSENE
+}
+
+// ============================================
+// SUPPLIER
+// ============================================
+model Supplier {
+  id             Int      @id @default(autoincrement())
+  organisationId Int
+  companyName    String
+  contactPerson  String
+  phone          String
+  email          String?
+  address        String?
+  createdAt      DateTime @default(now())
+
+  organisation Organisation       @relation(fields: [organisationId], references: [id])
+  deliveries   FuelStock[]
+  fuelTypes    SupplierFuelType[]
+}
+
+model SupplierFuelType {
+  id            Int @id @default(autoincrement())
+  supplierId    Int
+  fuelProductId Int
+
+  supplier    Supplier    @relation(fields: [supplierId], references: [id])
+  fuelProduct FuelProduct @relation(fields: [fuelProductId], references: [id])
+
+  @@unique([supplierId, fuelProductId])
+}
+
+// ============================================
+// FUEL STOCK (deliveries — stock goes UP)
+// ============================================
+model FuelStock {
+  id             Int      @id @default(autoincrement())
+  organisationId Int
+  fuelProductId  Int
+  supplierId     Int
+  quantityLitres Float
+  costPerLitre   Float
+  deliveryDate   DateTime @default(now())
+  invoiceNumber  String?
+  createdAt      DateTime @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id])
+  fuelProduct  FuelProduct  @relation(fields: [fuelProductId], references: [id])
+  supplier     Supplier     @relation(fields: [supplierId], references: [id])
+}
+
+// ============================================
+// ATTENDANT
+// ============================================
+model Attendant {
+  id             Int      @id @default(autoincrement())
+  organisationId Int
+  fullName       String
+  employeeId     String
+  pumpAssigned   String?
+  phone          String
+  hireDate       DateTime @default(now())
+  isActive       Boolean  @default(true)
+
+  organisation Organisation @relation(fields: [organisationId], references: [id])
+  sales        FuelSale[]
+
+  @@unique([organisationId, employeeId]) // employee ID unique per station
+}
+
+// ============================================
+// CUSTOMER
+// ============================================
+model Customer {
+  id             Int          @id @default(autoincrement())
+  organisationId Int
+  fullName       String
+  phone          String?
+  plateNumber    String?
+  customerType   CustomerType @default(WALK_IN)
+  createdAt      DateTime     @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id])
+  purchases    FuelSale[]
+}
+
+enum CustomerType {
+  WALK_IN
+  REGISTERED
+}
+
+// ============================================
+// FUEL SALE (stock goes DOWN)
+// ============================================
+model FuelSale {
+  id             Int           @id @default(autoincrement())
+  organisationId Int
+  fuelProductId  Int
+  attendantId    Int
+  customerId     Int? // nullable for anonymous sales
+  litresSold     Float
+  unitPrice      Float // price at time of sale
+  totalAmount    Float
+  saleDate       DateTime      @default(now())
+  paymentMethod  PaymentMethod
+
+  organisation Organisation @relation(fields: [organisationId], references: [id])
+  fuelProduct  FuelProduct  @relation(fields: [fuelProductId], references: [id])
+  attendant    Attendant    @relation(fields: [attendantId], references: [id])
+  customer     Customer?    @relation(fields: [customerId], references: [id])
+  payment      Payment?
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  TRANSFER
+}
+
+// ============================================
+// PAYMENT
+// ============================================
+model Payment {
+  id             Int           @id @default(autoincrement())
+  organisationId Int
+  fuelSaleId     Int           @unique
+  amountPaid     Float
+  method         PaymentMethod
+  paidAt         DateTime      @default(now())
+  reference      String?
+
+  organisation Organisation @relation(fields: [organisationId], references: [id])
+  sale         FuelSale     @relation(fields: [fuelSaleId], references: [id])
+}
+
+// ============================================
+// DAILY SUMMARY
+// ============================================
+model DailySummary {
+  id              Int      @id @default(autoincrement())
+  organisationId  Int
+  fuelProductId   Int
+  summaryDate     DateTime @db.Date
+  totalLitresSold Float
+  totalRevenue    Float
+  openingStock    Float
+  closingStock    Float
+
+  organisation Organisation @relation(fields: [organisationId], references: [id])
+  fuelProduct  FuelProduct  @relation(fields: [fuelProductId], references: [id])
+
+  @@unique([organisationId, summaryDate, fuelProductId])
+}
