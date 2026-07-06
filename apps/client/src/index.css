@@ -1,111 +1,82 @@
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+:root, :root[data-theme='light'] {
+  --bg: #fbfaf7;
+  --sidebar-bg: #fbfaf7;
+  --sidebar-text: #6b6b6b;
+  --sidebar-active: #191919;
+  --sidebar-active-bg: #f3f2ee;
+  --card-bg: #ffffff;
+  --text: #191919;
+  --text-secondary: #6b6b6b;
+  --border: #e5e3dd;
+  --accent: #191919;
+  --accent-hover: #333333;
+  --accent-text: #ffffff;
+  --danger: #e05a47;
+  --success: #3b7a57;
+  --warning: #d97706;
+  --radius: 16px;
+  --shadow: 0 4px 12px rgba(25, 25, 25, 0.04), 0 1px 2px rgba(25, 25, 25, 0.01);
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  --badge-success-bg: rgba(59, 122, 87, 0.1);
+  --badge-success-color: #244d36;
+  --badge-warning-bg: rgba(217, 119, 6, 0.1);
+  --badge-warning-color: #8f4f00;
+  --badge-danger-bg: rgba(224, 90, 71, 0.1);
+  --badge-danger-color: #a63b2c;
+  --badge-info-bg: rgba(25, 25, 25, 0.08);
+  --badge-info-color: #191919;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  --table-hover: rgba(0, 0, 0, 0.02);
+  --btn-hover-bg: #f3f2ee;
+  --progress-bg: #f3f2ee;
+  --logo-filter: invert(1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+:root[data-theme='dark'] {
+  --bg: #121212;
+  --sidebar-bg: #121212;
+  --sidebar-text: #8e8e93;
+  --sidebar-active: #faf8f5;
+  --sidebar-active-bg: rgba(250, 248, 245, 0.08);
+  --card-bg: #191919;
+  --text: #faf8f5;
+  --text-secondary: #8e8e93;
+  --border: #2c2c2e;
+  --accent: #faf8f5;
+  --accent-hover: #ffffff;
+  --accent-text: #121212;
+  --danger: #e05a47;
+  --success: #51cf66;
+  --warning: #fcc419;
+  --radius: 16px;
+  --shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
+  --badge-success-bg: rgba(81, 207, 102, 0.15);
+  --badge-success-color: #51cf66;
+  --badge-warning-bg: rgba(252, 196, 25, 0.15);
+  --badge-warning-color: #fcc419;
+  --badge-danger-bg: rgba(224, 90, 71, 0.15);
+  --badge-danger-color: #ff6b6b;
+  --badge-info-bg: rgba(250, 248, 245, 0.1);
+  --badge-info-color: #faf8f5;
+
+  --table-hover: rgba(255, 255, 255, 0.03);
+  --btn-hover-bg: #2c2c2e;
+  --progress-bg: #2c2c2e;
+  --logo-filter: none;
 }
 
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root { height: 100%; }
 
 body {
-  margin: 0;
-}
-
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-weight: 400;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  letter-spacing: -0.3px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

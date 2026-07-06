@@ -5,3 +5,8 @@ dist/
 build/
 .DS_Store
 prisma/migrations/
+apps/server/src/db.js
+apps/server/src/routes/
+apps/server/prisma/dev.db
+apps/server/prisma/seed.js
+AGENTS.md
