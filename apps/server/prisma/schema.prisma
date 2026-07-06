@@ -1,0 +1,162 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Organisation {
+  id        Int      @id @default(autoincrement())
+  name      String
+  address   String
+  phone     String
+  password  String
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  fuelProducts   FuelProduct[]
+  suppliers      Supplier[]
+  fuelStocks     FuelStock[]
+  attendants     Attendant[]
+  customers      Customer[]
+  sales          FuelSale[]
+  payments       Payment[]
+  dailySummaries DailySummary[]
+}
+
+model FuelProduct {
+  id             Int      @id @default(autoincrement())
+  organisationId Int
+  name           String
+  type           String // PETROL, DIESEL, KEROSENE
+  pricePerLitre  Float
+  unit           String   @default("litre")
+  createdAt      DateTime @default(now())
+
+  organisation  Organisation       @relation(fields: [organisationId], references: [id])
+  stocks        FuelStock[]
+  sales         FuelSale[]
+  summaries     DailySummary[]
+  supplierLinks SupplierFuelType[]
+}
+
+model Supplier {
+  id             Int      @id @default(autoincrement())
+  organisationId Int
+  companyName    String
+  contactPerson  String
+  phone          String
+  email          String?
+  address        String?
+  createdAt      DateTime @default(now())
+
+  organisation Organisation       @relation(fields: [organisationId], references: [id])
+  deliveries   FuelStock[]
+  fuelTypes    SupplierFuelType[]
+}
+
+model SupplierFuelType {
+  id            Int @id @default(autoincrement())
+  supplierId    Int
+  fuelProductId Int
+
+  supplier    Supplier    @relation(fields: [supplierId], references: [id])
+  fuelProduct FuelProduct @relation(fields: [fuelProductId], references: [id])
+
+  @@unique([supplierId, fuelProductId])
+}
+
+model FuelStock {
+  id             Int      @id @default(autoincrement())
+  organisationId Int
+  fuelProductId  Int
+  supplierId     Int
+  quantityLitres Float
+  costPerLitre   Float
+  deliveryDate   DateTime @default(now())
+  invoiceNumber  String?
+  createdAt      DateTime @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id])
+  fuelProduct  FuelProduct  @relation(fields: [fuelProductId], references: [id])
+  supplier     Supplier     @relation(fields: [supplierId], references: [id])
+}
+
+model Attendant {
+  id             Int      @id @default(autoincrement())
+  organisationId Int
+  fullName       String
+  employeeId     String
+  pumpAssigned   String?
+  phone          String
+  hireDate       DateTime @default(now())
+  isActive       Boolean  @default(true)
+
+  organisation Organisation @relation(fields: [organisationId], references: [id])
+  sales        FuelSale[]
+
+  @@unique([organisationId, employeeId])
+}
+
+model Customer {
+  id             Int          @id @default(autoincrement())
+  organisationId Int
+  fullName       String
+  phone          String?
+  plateNumber    String?
+  customerType   String   @default("WALK_IN") // WALK_IN, REGISTERED
+  createdAt      DateTime     @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id])
+  purchases    FuelSale[]
+}
+
+model FuelSale {
+  id             Int           @id @default(autoincrement())
+  organisationId Int
+  fuelProductId  Int
+  attendantId    Int
+  customerId     Int?
+  litresSold     Float
+  unitPrice      Float
+  totalAmount    Float
+  saleDate       DateTime      @default(now())
+  paymentMethod  String // CASH, CARD, TRANSFER
+
+  organisation Organisation @relation(fields: [organisationId], references: [id])
+  fuelProduct  FuelProduct  @relation(fields: [fuelProductId], references: [id])
+  attendant    Attendant    @relation(fields: [attendantId], references: [id])
+  customer     Customer?    @relation(fields: [customerId], references: [id])
+  payment      Payment?
+}
+
+model Payment {
+  id             Int           @id @default(autoincrement())
+  organisationId Int
+  fuelSaleId     Int           @unique
+  amountPaid     Float
+  method         String // CASH, CARD, TRANSFER
+  paidAt         DateTime      @default(now())
+  reference      String?
+
+  organisation Organisation @relation(fields: [organisationId], references: [id])
+  sale         FuelSale     @relation(fields: [fuelSaleId], references: [id])
+}
+
+model DailySummary {
+  id              Int      @id @default(autoincrement())
+  organisationId  Int
+  fuelProductId   Int
+  summaryDate     DateTime
+  totalLitresSold Float
+  totalRevenue    Float
+  openingStock    Float
+  closingStock    Float
+
+  organisation Organisation @relation(fields: [organisationId], references: [id])
+  fuelProduct  FuelProduct  @relation(fields: [fuelProductId], references: [id])
+
+  @@unique([organisationId, summaryDate, fuelProductId])
+}
