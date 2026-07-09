@@ -19,8 +19,7 @@ datasource db {
 model Organisation {
   id        Int      @id @default(autoincrement())
   name      String // "Total Energies GRA"
-  address   String
-  phone     String
+  address   String?
   password  String
   email     String   @unique
   createdAt DateTime @default(now())
