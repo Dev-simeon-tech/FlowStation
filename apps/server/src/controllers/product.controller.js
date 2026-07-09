@@ -16,7 +16,7 @@ export const getFuelProducts = async (req, res) => {
 export const setupFuelProduct = async (req, res) => {
   try {
     const { name, type, pricePerLitre } = req.body;
-    await prisma.fuelProduct.create({
+    const newFuelProduct = await prisma.fuelProduct.create({
       data: {
         name,
         type,
@@ -25,7 +25,9 @@ export const setupFuelProduct = async (req, res) => {
       },
     });
 
-    res.status(201).json({ message: "Fuel product created successfully" });
+    res
+      .status(201)
+      .json({ message: "Fuel product created successfully", newFuelProduct });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Something went wrong" });
@@ -34,7 +36,7 @@ export const setupFuelProduct = async (req, res) => {
 
 export const updateFuelProduct = async (req, res) => {
   try {
-    const { pricePerLitre } = req.body;
+    const { pricePerLitre, name, type } = req.body;
     const existingFuelProduct = await prisma.fuelProduct.findUnique({
       where: {
         id: parseInt(req.params.id),
@@ -46,7 +48,7 @@ export const updateFuelProduct = async (req, res) => {
     }
     const newFuelProduct = await prisma.fuelProduct.update({
       where: { id: existingFuelProduct.id },
-      data: { pricePerLitre },
+      data: { pricePerLitre, name, type },
     });
     res.status(200).json(newFuelProduct);
   } catch (error) {

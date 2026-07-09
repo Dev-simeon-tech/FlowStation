@@ -40,12 +40,9 @@ export const createSupplier = async (req, res) => {
       },
     });
 
-    await prisma.supplierFuelType.createMany({
-      data: { supplierId: supplier.id, fuelProductId },
-      skipDuplicates: true,
-    });
-
-    res.status(201).json({ message: "Supplier created successfully" });
+    res
+      .status(201)
+      .json({ message: "Supplier created successfully", ...supplier });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Something went wrong" });
@@ -58,7 +55,9 @@ export const deleteSupplier = async (req, res) => {
     const supplierId = parseInt(id);
 
     // ensure supplier exists and belongs to the organisation
-    const existing = await prisma.supplier.findUnique({ where: { id: supplierId } });
+    const existing = await prisma.supplier.findUnique({
+      where: { id: supplierId },
+    });
     if (!existing || existing.organisationId !== req.organisationId) {
       return res.status(404).json({ message: "Supplier not found" });
     }

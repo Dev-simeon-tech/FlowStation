@@ -39,12 +39,16 @@
   margin-bottom: 16px;
   box-shadow: var(--shadow);
   animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.01);
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.01);
 }
 
 .card h2 {
@@ -72,12 +76,16 @@
   padding: 24px 28px;
   box-shadow: var(--shadow);
   animation: fadeInUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .kpiCard:hover {
   transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.01);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.06),
+    0 1px 3px rgba(0, 0, 0, 0.01);
 }
 
 .kpiLabel {
@@ -146,16 +154,28 @@
   font-weight: 600;
 }
 
-.badgeSuccess { background: var(--badge-success-bg); color: var(--badge-success-color); }
-.badgeWarning { background: var(--badge-warning-bg); color: var(--badge-warning-color); }
-.badgeDanger  { background: var(--badge-danger-bg); color: var(--badge-danger-color); }
-.badgeInfo    { background: var(--badge-info-bg); color: var(--badge-info-color); }
+.badgeSuccess {
+  background: var(--badge-success-bg);
+  color: var(--badge-success-color);
+}
+.badgeWarning {
+  background: var(--badge-warning-bg);
+  color: var(--badge-warning-color);
+}
+.badgeDanger {
+  background: var(--badge-danger-bg);
+  color: var(--badge-danger-color);
+}
+.badgeInfo {
+  background: var(--badge-info-bg);
+  color: var(--badge-info-color);
+}
 
 .badgePETROL {
   background: rgba(0, 113, 227, 0.08);
   color: #0066cc;
 }
-:global([data-theme='dark']) .badgePETROL {
+:global([data-theme="dark"]) .badgePETROL {
   background: rgba(10, 132, 255, 0.15);
   color: #0a84ff;
 }
@@ -164,7 +184,7 @@
   background: rgba(134, 112, 244, 0.08);
   color: #684bf5;
 }
-:global([data-theme='dark']) .badgeDIESEL {
+:global([data-theme="dark"]) .badgeDIESEL {
   background: rgba(191, 90, 242, 0.15);
   color: #bf5af2;
 }
@@ -173,7 +193,7 @@
   background: rgba(255, 149, 0, 0.08);
   color: #d97300;
 }
-:global([data-theme='dark']) .badgeKEROSENE {
+:global([data-theme="dark"]) .badgeKEROSENE {
   background: rgba(255, 159, 10, 0.15);
   color: #ff9f0a;
 }
@@ -189,6 +209,7 @@
 .formGroup {
   display: flex;
   flex-direction: column;
+  margin-top: 10px;
 }
 
 .formGroup label {
@@ -208,7 +229,9 @@
   color: var(--text);
   background: var(--bg);
   font-family: inherit;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .formGroup input::placeholder,
@@ -231,7 +254,7 @@
 .formGroup textarea:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(62,207,142,0.1);
+  box-shadow: 0 0 0 3px rgba(62, 207, 142, 0.1);
 }
 
 /* Select */
@@ -264,7 +287,7 @@
 .formGroup select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(62,207,142,0.1);
+  box-shadow: 0 0 0 3px rgba(62, 207, 142, 0.1);
 }
 
 /* Number Input */
@@ -299,7 +322,7 @@
 .numberInput input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(62,207,142,0.1);
+  box-shadow: 0 0 0 3px rgba(62, 207, 142, 0.1);
 }
 
 .numberBtns {
@@ -322,7 +345,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
   padding: 0;
 }
 
@@ -344,7 +369,9 @@
   font-size: 13px;
   font-family: inherit;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition:
+    background 0.15s,
+    transform 0.1s;
 }
 
 .btn:active {
@@ -356,7 +383,9 @@
   color: var(--accent-text);
 }
 
-.btnPrimary:hover { background: var(--accent-hover); }
+.btnPrimary:hover {
+  background: var(--accent-hover);
+}
 
 .btnDanger {
   background: transparent;

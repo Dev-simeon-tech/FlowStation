@@ -15,13 +15,13 @@ app.use(express.json());
 app.use(cors());
 
 // Routes
-app.use("/auth", authRoutes);
-app.use("/products", productRoutes);
-app.use("/suppliers", SupplierRoutes);
-app.use("/stock", stockRoutes);
-app.use("/attendants", attendantRoutes);
-app.use("/customers", customerRoutes);
-app.use("/sales", salesRoutes);
-app.use("/summaries", summaryRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/suppliers", SupplierRoutes);
+app.use("/api/stock", stockRoutes);
+app.use("/api/attendants", attendantRoutes);
+app.use("/api/customers", customerRoutes);
+app.use("/api/sales", salesRoutes);
+app.use("/api/summaries", summaryRoutes);
 
 export default app;

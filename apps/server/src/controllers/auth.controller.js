@@ -4,7 +4,7 @@ import prisma from "../../config/prisma.js";
 
 export const register = async (req, res) => {
   try {
-    const { name, address, phone, email, password } = req.body;
+    const { name, address, email, password } = req.body;
 
     // check if email already taken
     const existing = await prisma.organisation.findUnique({
@@ -24,7 +24,6 @@ export const register = async (req, res) => {
       data: {
         name,
         address,
-        phone,
         email,
         password: hashedPassword,
       },
@@ -94,5 +93,30 @@ export const login = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error during login" });
+  }
+};
+
+export const getMe = async (req, res) => {
+  try {
+    const organisation = await prisma.organisation.findUnique({
+      where: { id: req.organisationId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        address: true,
+        createdAt: true,
+        // password is intentionally excluded
+      },
+    });
+
+    if (!organisation) {
+      return res.status(404).json({ message: "Organisation not found" });
+    }
+
+    res.json(organisation);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to fetch organisation details" });
   }
 };

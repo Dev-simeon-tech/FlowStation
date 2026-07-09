@@ -1,33 +1,36 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import s from '../styles/shared.module.css';
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import s from "../styles/shared.module.css";
 
 export default function Register() {
   const { register } = useAuth();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [address, setAddress] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => { document.title = 'Register / FlowStation'; }, []);
+  useEffect(() => {
+    document.title = "Register / FlowStation";
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name || !email || !password) {
-      setError('All fields are required');
+      setError("All fields are required");
       return;
     }
     setSubmitting(true);
-    setError('');
+    setError("");
     try {
-      await register(name, email, password);
+      await register(name, email, password, address);
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('Registration failed');
+        setError("Registration failed");
       }
     } finally {
       setSubmitting(false);
@@ -36,16 +39,16 @@ export default function Register() {
 
   let btnText;
   if (submitting) {
-    btnText = 'Creating account...';
+    btnText = "Creating account...";
   } else {
-    btnText = 'Register';
+    btnText = "Register";
   }
 
   return (
     <div className={s.loginWrap}>
       <div className={s.loginCard}>
         <div className={s.loginLogo}>
-          <img src="/favicon.png" alt="" width={40} height={40} />
+          <img src='/favicon.png' alt='' width={40} height={40} />
         </div>
         <h1 className={s.loginTitle}>FlowStation</h1>
         <p className={s.loginSub}>Register your station</p>
@@ -54,39 +57,60 @@ export default function Register() {
           <div className={s.formGroup}>
             <label>Station Name</label>
             <input
-              type="text"
-              placeholder="e.g. Total Energies GRA"
+              type='text'
+              placeholder='e.g. Total Energies GRA'
               value={name}
-              onChange={e => setName(e.target.value)}
+              onChange={(e) => setName(e.target.value)}
               autoFocus
             />
           </div>
           <div className={s.formGroup}>
             <label>Email</label>
             <input
-              type="email"
-              placeholder="admin@station.com"
+              type='email'
+              placeholder='admin@station.com'
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <div className={s.formGroup}>
+            <label>Address</label>
+            <input
+              type='text'
+              placeholder='Station address'
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+            />
+          </div>
+
+          <div className={s.formGroup}>
             <label>Password</label>
             <input
-              type="password"
-              placeholder="Choose a password"
+              type='password'
+              placeholder='********'
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
             />
           </div>
           {error && <p className={s.loginError}>{error}</p>}
-          <button className={`${s.btn} ${s.btnPrimary}`} type="submit" disabled={submitting} style={{ width: '100%', marginTop: 8 }}>
+          <button
+            className={`${s.btn} ${s.btnPrimary}`}
+            type='submit'
+            disabled={submitting}
+            style={{ width: "100%", marginTop: 8 }}
+          >
             {btnText}
           </button>
         </form>
 
-        <p className={s.loginSub} style={{ marginTop: 16, textAlign: 'center' }}>
-          Already have an account? <Link to="/login" style={{ color: 'var(--accent)' }}>Sign in</Link>
+        <p
+          className={s.loginSub}
+          style={{ marginTop: 16, textAlign: "center" }}
+        >
+          Already have an account?{" "}
+          <Link to='/login' style={{ color: "var(--accent)" }}>
+            Sign in
+          </Link>
         </p>
       </div>
     </div>

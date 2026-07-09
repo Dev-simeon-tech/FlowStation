@@ -10,6 +10,6 @@ const router = express.Router();
 
 router.get("", protect, getFuelProducts);
 router.post("/setup", protect, setupFuelProduct);
-router.post("/edit/:id", protect, updateFuelProduct);
+router.put("/edit/:id", protect, updateFuelProduct);
 
 export default router;

@@ -1,8 +1,8 @@
-import type { FUEL_TYPES, PAYMENT_METHODS, CUSTOMER_TYPES } from './constants';
+import type { FUEL_TYPES, PAYMENT_METHODS, CUSTOMER_TYPES } from "./constants";
 
-export type FuelType = typeof FUEL_TYPES[number];
-export type PaymentMethod = typeof PAYMENT_METHODS[number];
-export type CustomerType = typeof CUSTOMER_TYPES[number];
+export type FuelType = (typeof FUEL_TYPES)[number];
+export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+export type CustomerType = (typeof CUSTOMER_TYPES)[number];
 
 export interface FuelProduct {
   id: number;
@@ -81,6 +81,7 @@ export interface Payment {
 
 export interface DailySummary {
   id: number;
+  organisationId: number;
   fuelProductId: number;
   summaryDate: string;
   totalLitresSold: number;

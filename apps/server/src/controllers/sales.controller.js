@@ -53,7 +53,7 @@ export const createSale = async (req, res) => {
       customerId, // optional — null for walk-in
       litresSold,
       paymentMethod,
-      isPaid, // boolean — whether to also create a Payment record
+      isPaid = true, // boolean — whether to also create a Payment record
     } = req.body;
 
     // 1. basic validation
