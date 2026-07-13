@@ -59,7 +59,6 @@ export default function Dashboard() {
       .then((data) => setChartData(getLast7DaysRevenue(data)))
       .catch(console.error);
   }, []);
-  console.log(chartData);
 
   useEffect(() => {
     const today = new Date().toISOString();
@@ -149,7 +148,7 @@ export default function Dashboard() {
             >
               <XAxis dataKey='date' tick={{ fontSize: 13 }} />
               <YAxis
-                tickFormatter={(v) => `₦${(v / 1000).toFixed(0)}k`}
+                tickFormatter={(v: number) => `₦${(v / 1000).toFixed(0)}k`}
                 tick={{ fontSize: 12 }}
               />
               <Tooltip content={<CustomTooltip />} />
