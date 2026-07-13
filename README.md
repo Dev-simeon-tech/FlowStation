@@ -6,8 +6,6 @@
 
 ![FlowStation Dashboard preview](./apps/client/public/screenshots/dashboard.png)
 
-> **How to add screenshots:** Create a `screenshots/` folder at the root of your repo, take screenshots of each screen and save them with the filenames above, then push to GitHub. The images will appear here automatically.
-
 ---
 
 ## 📋 Table of Contents
@@ -104,14 +102,14 @@ This project was built as a group academic assignment to demonstrate relational 
 
 ### Frontend — `apps/client`
 
-| Technology       | Purpose                                    |
-| ---------------- | ------------------------------------------ |
-| React + Vite     | UI framework and dev server                |
-| TypeScript       | Type safety on the frontend                |
-| Tailwind CSS     | Utility-first styling                      |
-| React Router     | Client-side routing                        |
-| Recharts         | Bar charts and data visualisation          |
-| Axios / apiFetch | HTTP client with automatic token injection |
+| Technology   | Purpose                                    |
+| ------------ | ------------------------------------------ |
+| React + Vite | UI framework and dev server                |
+| TypeScript   | Type safety on the frontend                |
+| Tailwind CSS | Utility-first styling                      |
+| React Router | Client-side routing                        |
+| Recharts     | Bar charts and data visualisation          |
+| apiFetch     | HTTP client with automatic token injection |
 
 ### Backend — `apps/server`
 
@@ -138,55 +136,6 @@ This project was built as a group academic assignment to demonstrate relational 
 | Neon           | Hosted PostgreSQL database (free tier)   |
 | npm Workspaces | Monorepo management                      |
 | concurrently   | Run client and server together from root |
-
----
-
-## 📁 Project Structure
-
-```
-flowstation/
-├── package.json                  ← root workspace config
-├── .gitignore
-├── README.md
-│
-├── apps/
-│   ├── client/                   ← React + TypeScript frontend
-│   │   ├── src/
-│   │   │   ├── components/       ← reusable UI (buttons, modals, tables)
-│   │   │   ├── pages/            ← one folder per screen
-│   │   │   │   ├── Dashboard/
-│   │   │   │   ├── Products/
-│   │   │   │   ├── Stock/
-│   │   │   │   ├── Suppliers/
-│   │   │   │   ├── Attendants/
-│   │   │   │   ├── Sales/
-│   │   │   │   ├── Customers/
-│   │   │   │   ├── Payments/
-│   │   │   │   ├── Summary/
-│   │   │   │   └── Reports/
-│   │   │   ├── services/         ← API call functions (apiFetch wrapper)
-│   │   │   ├── context/          ← AuthContext (login, logout, token)
-│   │   │   └── routes/           ← React Router route definitions
-│   │   └── vite.config.ts        ← proxy: /api → localhost:3000
-│   │
-│   └── server/                   ← Node.js + Express backend
-│       ├── prisma/
-│       │   ├── schema.prisma     ← full database schema
-│       │   └── seed.js           ← demo data seeder
-│       └── src/
-│           ├── app.js            ← Express setup, route mounting
-│           ├── index.js          ← server entry point
-│           ├── config/db.js      ← Prisma client singleton
-│           ├── routes/           ← one route file per module
-│           ├── controllers/      ← business logic per module
-│           └── middleware/
-│               ├── auth.js       ← JWT protect middleware
-│               └── errorHandler.js
-│
-└── packages/
-    └── shared/
-        └── src/index.js          ← FUEL_TYPES, PAYMENT_METHODS constants
-```
 
 ---
 
@@ -291,20 +240,20 @@ All routes except `/api/auth/register` and `/api/auth/login` require an `Authori
 
 ### Fuel Products
 
-| Method | Endpoint            | Description             |
-| ------ | ------------------- | ----------------------- |
-| GET    | `/api/products`     | List all fuel products  |
-| POST   | `/api/products`     | Create a fuel product   |
-| PUT    | `/api/products/:id` | Update price or details |
-| DELETE | `/api/products/:id` | Remove a product        |
+| Method | Endpoint                 | Description             |
+| ------ | ------------------------ | ----------------------- |
+| GET    | `/api/products`          | List all fuel products  |
+| POST   | `/api/products/setup`    | Create a fuel product   |
+| PUT    | `/api/products/edit/:id` | Update price or details |
+| DELETE | `/api/products/:id`      | Remove a product        |
 
 ### Suppliers
 
-| Method | Endpoint                   | Description                    |
-| ------ | -------------------------- | ------------------------------ |
-| GET    | `/api/suppliers`           | List all suppliers             |
-| POST   | `/api/suppliers`           | Add a supplier                 |
-| POST   | `/api/suppliers/:id/fuels` | Link a fuel type to a supplier |
+| Method | Endpoint             | Description        |
+| ------ | -------------------- | ------------------ |
+| GET    | `/api/suppliers`     | List all suppliers |
+| POST   | `/api/suppliers/new` | Add a supplier     |
+| DELETE | `/api/suppliers/:id` | Delete a supplier  |
 
 ### Fuel Stock
 
@@ -313,14 +262,14 @@ All routes except `/api/auth/register` and `/api/auth/login` require an `Authori
 | GET    | `/api/stock`         | All delivery records                    |
 | GET    | `/api/stock/balance` | Current stock balance per fuel type     |
 | GET    | `/api/stock/:id`     | Single delivery record                  |
-| POST   | `/api/stock`         | Record a new delivery (stock increases) |
+| POST   | `/api/stock/new`     | Record a new delivery (stock increases) |
 
 ### Attendants
 
 | Method | Endpoint              | Description              |
 | ------ | --------------------- | ------------------------ |
 | GET    | `/api/attendants`     | List all attendants      |
-| POST   | `/api/attendants`     | Register an attendant    |
+| POST   | `/api/attendants/new` | Register an attendant    |
 | PUT    | `/api/attendants/:id` | Update attendant details |
 
 ### Sales
@@ -329,22 +278,16 @@ All routes except `/api/auth/register` and `/api/auth/login` require an `Authori
 | ------ | ---------------- | ------------------------------------ |
 | GET    | `/api/sales`     | All sales records                    |
 | GET    | `/api/sales/:id` | Single sale details                  |
-| POST   | `/api/sales`     | Record a fuel sale (stock decreases) |
+| POST   | `/api/sales/new` | Record a fuel sale (stock decreases) |
 
 ### Customers
 
 | Method | Endpoint                       | Description                     |
 | ------ | ------------------------------ | ------------------------------- |
 | GET    | `/api/customers`               | List all customers              |
-| POST   | `/api/customers`               | Register a customer             |
+| POST   | `/api/customers/new`           | Register a customer             |
+| PUT    | `/api/customers/edit/:id`      | Update a customer details       |
 | GET    | `/api/customers/:id/purchases` | Purchase history for a customer |
-
-### Payments
-
-| Method | Endpoint            | Description            |
-| ------ | ------------------- | ---------------------- |
-| GET    | `/api/payments`     | All payment records    |
-| GET    | `/api/payments/:id` | Single payment details |
 
 ### Daily Summary
 
@@ -354,24 +297,7 @@ All routes except `/api/auth/register` and `/api/auth/login` require an `Authori
 | POST   | `/api/summary/generate`        | Save end-of-day summary |
 | GET    | `/api/summary/history`         | All saved summaries     |
 
-### Reports
-
-| Method | Endpoint       | Description                |
-| ------ | -------------- | -------------------------- |
-| GET    | `/api/reports` | Revenue and stock overview |
-
 ---
-
-## 👥 Team
-
-**Group 2** — Database Systems Project
-
-| Name            | Role                        |
-| --------------- | --------------------------- |
-| [Team Member 1] | Backend — API & Database    |
-| [Team Member 2] | Frontend — UI & Components  |
-| [Team Member 3] | Frontend — Charts & Reports |
-| [Team Member 4] | Database Design & Seed Data |
 
 > Built with Node.js, React, Prisma, and PostgreSQL as part of a group academic assignment.
 
