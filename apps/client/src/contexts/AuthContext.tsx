@@ -48,6 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return null;
   });
   const [loading, setLoading] = useState(true);
+  const BaseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
@@ -56,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       return;
     }
-    fetch("http://localhost:3000/api/auth/me", {
+    fetch(`${BaseUrl}/api/auth/me`, {
       headers: { Authorization: `Bearer ${user.token}` },
     })
       .then((r) => {
@@ -106,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function login(email: string, password: string) {
     try {
-      const res = await fetch("http://localhost:3000/api/auth/login", {
+      const res = await fetch(`${BaseUrl}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -132,7 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     address: string,
   ) {
     try {
-      const res = await fetch("http://localhost:3000/api/auth/register", {
+      const res = await fetch(`${BaseUrl}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password, address }),
