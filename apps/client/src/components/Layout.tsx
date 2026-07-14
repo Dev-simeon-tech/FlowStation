@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
 import styles from "./Layout.module.css";
 
 function SunIcon() {
@@ -43,21 +44,8 @@ export default function Layout() {
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
-
-  const [theme, setTheme] = useState(() => {
-    const stored = localStorage.getItem("theme");
-    if (stored) {
-      return stored;
-    } else {
-      return "light";
-    }
-  });
-
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
-  }, [theme]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -70,16 +58,6 @@ export default function Layout() {
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
-
-  function toggleTheme() {
-    setTheme((t) => {
-      if (t === "light") {
-        return "dark";
-      } else {
-        return "light";
-      }
-    });
-  }
 
   // Resolve dynamic theme toggle icon
   let themeIcon = <SunIcon />;

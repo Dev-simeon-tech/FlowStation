@@ -137,6 +137,7 @@ export default function Dashboard() {
           <ResponsiveContainer
             style={{
               outline: "0",
+              overflow: "auto",
             }}
             width='100%'
             height={320}

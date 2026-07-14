@@ -48,6 +48,7 @@ export default function Customers() {
   });
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -104,6 +105,8 @@ export default function Customers() {
         setCustomers((prev) =>
           prev.map((c) => (c.id === editing.id ? updated : c)),
         );
+        setMessage("Customer updated successfully");
+        setTimeout(() => setMessage(""), 5000);
         if (selected?.id === editing.id) setSelected(updated);
       } else {
         const created = await apiFetch<Customer>("/api/customers/new", {
@@ -111,6 +114,8 @@ export default function Customers() {
           body: JSON.stringify(form),
         });
         setCustomers((prev) => [...prev, created]);
+        setMessage("Customer registered successfully");
+        setTimeout(() => setMessage(""), 5000);
       }
       resetForm();
     } catch (e) {
@@ -120,11 +125,23 @@ export default function Customers() {
     }
   }
 
-  // const totalSpent = purchases.reduce((sum, p) => sum + p.totalAmount, 0);
-  // const totalLitres = purchases.reduce((sum, p) => sum + p.litresSold, 0);
-
   return (
     <div>
+      {message && (
+        <div
+          className={s.card}
+          style={{
+            background: "#0d2817",
+            border: "1px solid var(--accent)",
+            marginBottom: 12,
+          }}
+        >
+          <p
+            style={{ color: "#3ecf8e" }}
+            dangerouslySetInnerHTML={{ __html: message }}
+          />
+        </div>
+      )}
       <div className={s.header}>
         <h1>Customer Purchase Record</h1>
         <p>Register customers and view their purchase history</p>

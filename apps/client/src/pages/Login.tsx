@@ -1,79 +1,108 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import s from '../styles/shared.module.css';
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { loginSchema, type LoginFormValues } from "../schema/login.schema";
+import s from "../styles/shared.module.css";
 
 export default function Login() {
   const { login } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
+  });
 
-  useEffect(() => { document.title = 'Login / FlowStation'; }, []);
+  useEffect(() => {
+    document.title = "Login / FlowStation";
+  }, []);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!email || !password) { setError('Enter email and password'); return; }
-    setSubmitting(true);
-    setError('');
+  async function onSubmit(values: LoginFormValues) {
+    setError("");
     try {
-      await login(email, password);
+      await login(values.email, values.password);
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('Login failed');
+        setError("Login failed");
       }
-    } finally {
-      setSubmitting(false);
     }
   }
 
-  let btnText;
-  if (submitting) {
-    btnText = 'Signing in...';
-  } else {
-    btnText = 'Sign in';
-  }
+  const btnText = isSubmitting ? "Signing in..." : "Sign in";
 
   return (
     <div className={s.loginWrap}>
       <div className={s.loginCard}>
         <div className={s.loginLogo}>
-          <img src="/favicon.png" alt="" width={40} height={40} />
+          <img src='/favicon.png' alt='' width={40} height={40} />
         </div>
         <h1 className={s.loginTitle}>FlowStation</h1>
         <p className={s.loginSub}>Sign in to your station dashboard</p>
-
-        <form onSubmit={handleSubmit} className={s.loginForm}>
+        {error && (
+          <div
+            style={{
+              background: "#f87e7e",
+              border: "1px solid var(--accent)",
+              padding: 10,
+              marginBottom: 12,
+            }}
+          >
+            <p
+              style={{ color: "#333" }}
+              dangerouslySetInnerHTML={{ __html: error }}
+            />
+          </div>
+        )}
+        <form onSubmit={handleSubmit(onSubmit)} className={s.loginForm}>
           <div className={s.formGroup}>
             <label>Email</label>
             <input
-              type="email"
-              placeholder="admin@flowstation.com"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
+              type='email'
+              placeholder='admin@flowstation.com'
               autoFocus
+              {...register("email")}
             />
+            {errors.email && (
+              <p className={s.loginError}>{errors.email.message}</p>
+            )}
           </div>
           <div className={s.formGroup}>
             <label>Password</label>
             <input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
+              type='password'
+              placeholder='••••••••'
+              {...register("password")}
             />
+            {errors.password && (
+              <p className={s.loginError}>{errors.password.message}</p>
+            )}
           </div>
-          {error && <p className={s.loginError}>{error}</p>}
-          <button className={`${s.btn} ${s.btnPrimary}`} type="submit" disabled={submitting} style={{ width: '100%', marginTop: 8 }}>
+
+          <button
+            className={`${s.btn} ${s.btnPrimary}`}
+            type='submit'
+            disabled={isSubmitting}
+            style={{ width: "100%", marginTop: 8 }}
+          >
             {btnText}
           </button>
         </form>
 
-        <p className={s.loginSub} style={{ marginTop: 16, textAlign: 'center' }}>
-          Don&apos;t have an account? <Link to="/register" style={{ color: 'var(--accent)' }}>Register your station</Link>
+        <p
+          className={s.loginSub}
+          style={{ marginTop: 16, textAlign: "center" }}
+        >
+          Don&apos;t have an account?{" "}
+          <Link to='/register' style={{ color: "var(--accent)" }}>
+            Register your station
+          </Link>
         </p>
       </div>
     </div>
