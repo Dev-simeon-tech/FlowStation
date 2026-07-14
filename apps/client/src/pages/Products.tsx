@@ -32,6 +32,18 @@ export default function Products() {
     setEditing(null);
     setError("");
   }
+  const deleteFuelProduct = async (id: number) => {
+    try {
+      const res = await apiFetch<{ message: "" }>(`/api/products/${id}`, {
+        method: "DELETE",
+      });
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+      setMessage(res.message);
+      setTimeout(() => setMessage(""), 5000);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to delete product");
+    }
+  };
 
   function handleEdit(p: FuelProduct) {
     setEditing(p);
@@ -65,6 +77,8 @@ export default function Products() {
         setProducts((prev) =>
           prev.map((p) => (p.id === editing.id ? updated : p)),
         );
+        setMessage("Product updated successfully");
+        setTimeout(() => setMessage(""), 5000);
       } else {
         const created = await apiFetch<{
           message: string;
@@ -211,12 +225,27 @@ export default function Products() {
                   <td>&#8358;{p.pricePerLitre.toFixed(2)}</td>
                   <td>{p.unit}</td>
                   <td>{p.createdAt?.slice(0, 10)}</td>
-                  <td>
+                  <td
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 8,
+                    }}
+                  >
                     <button
-                      className={`${s.btn} ${s.btnPrimary}`}
+                      className={`${s.btn} ${s.btnDanger}`}
+                      style={{ fontSize: 12, padding: "4px 15px" }}
                       onClick={() => handleEdit(p)}
                     >
                       Edit
+                    </button>
+
+                    <button
+                      className={`${s.btn} ${s.btnPrimary}`}
+                      style={{ background: "red", color: "#fff" }}
+                      onClick={() => deleteFuelProduct(p.id)}
+                    >
+                      Delete
                     </button>
                   </td>
                 </tr>

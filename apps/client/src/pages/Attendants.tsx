@@ -18,6 +18,7 @@ export default function Attendants() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     apiFetch<Attendant[]>("/api/attendants")
@@ -59,12 +60,16 @@ export default function Attendants() {
         setAttendants((prev) =>
           prev.map((a) => (a.id === editing.id ? updated : a)),
         );
+        setMessage("Attendant updated successfully");
+        setTimeout(() => setMessage(""), 5000);
       } else {
         const created = await apiFetch<Attendant>("/api/attendants/new", {
           method: "POST",
           body: JSON.stringify(form),
         });
         setAttendants((prev) => [...prev, created]);
+        setMessage("Attendant registered successfully");
+        setTimeout(() => setMessage(""), 5000);
       }
       resetForm();
     } catch (e) {
@@ -91,6 +96,21 @@ export default function Attendants() {
 
   return (
     <div>
+      {message && (
+        <div
+          className={s.card}
+          style={{
+            background: "#0d2817",
+            border: "1px solid var(--accent)",
+            marginBottom: 12,
+          }}
+        >
+          <p
+            style={{ color: "#3ecf8e" }}
+            dangerouslySetInnerHTML={{ __html: message }}
+          />
+        </div>
+      )}
       <div className={s.header}>
         <h1>Attendant Registration</h1>
         <p>Register and manage pump staff</p>

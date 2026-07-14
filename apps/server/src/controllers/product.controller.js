@@ -34,6 +34,29 @@ export const setupFuelProduct = async (req, res) => {
   }
 };
 
+export const deleteFuelProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const fuelProductId = parseInt(id);
+
+    // ensure fuel product exists and belongs to the organisation
+    const existing = await prisma.fuelProduct.findUnique({
+      where: { id: fuelProductId },
+    });
+    if (!existing || existing.organisationId !== req.organisationId) {
+      return res.status(404).json({ message: "Fuel product not found" });
+    }
+
+    // delete dependent rows first to avoid foreign-key RESTRICT errors
+    await prisma.fuelProduct.deleteMany({ where: { id: fuelProductId } });
+
+    res.status(200).json({ message: "Fuel product deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
 export const updateFuelProduct = async (req, res) => {
   try {
     const { pricePerLitre, name, type } = req.body;

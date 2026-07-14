@@ -43,6 +43,9 @@
     transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
     box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
+.card:has(table) {
+  overflow-y: auto;
+}
 
 .card:hover {
   transform: translateY(-2px);
@@ -466,6 +469,7 @@
   justify-content: center;
   min-height: 100vh;
   background: var(--bg);
+  padding: 2rem;
 }
 
 .loginCard {
@@ -582,4 +586,14 @@
 
 .barFillAccent {
   background: var(--accent);
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 16px;
+  }
+  .formGrid {
+    display: flex;
+    flex-direction: column;
+  }
 }
