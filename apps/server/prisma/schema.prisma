@@ -5,19 +5,19 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 // ============================================
 // ORGANISATION (Gas Station)
 // ============================================
 model Organisation {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   name      String // "Total Energies GRA"
   address   String?
   password  String
@@ -32,14 +32,15 @@ model Organisation {
   sales          FuelSale[]
   payments       Payment[]
   dailySummaries DailySummary[]
+  tokens         Token[]        @relation("OrganisationTokens")
 }
 
 // ============================================
 // FUEL PRODUCT
 // ============================================
 model FuelProduct {
-  id             Int      @id @default(autoincrement())
-  organisationId Int
+  id             String   @id @default(uuid())
+  organisationId String
   name           String // "Premium Motor Spirit"
   type           FuelType
   pricePerLitre  Float
@@ -63,8 +64,8 @@ enum FuelType {
 // SUPPLIER
 // ============================================
 model Supplier {
-  id             Int      @id @default(autoincrement())
-  organisationId Int
+  id             String   @id @default(uuid())
+  organisationId String
   companyName    String
   contactPerson  String
   phone          String
@@ -78,9 +79,9 @@ model Supplier {
 }
 
 model SupplierFuelType {
-  id            Int @id @default(autoincrement())
-  supplierId    Int
-  fuelProductId Int
+  id            String @id @default(uuid())
+  supplierId    String
+  fuelProductId String
 
   supplier    Supplier    @relation(fields: [supplierId], references: [id])
   fuelProduct FuelProduct @relation(fields: [fuelProductId], references: [id])
@@ -92,10 +93,10 @@ model SupplierFuelType {
 // FUEL STOCK (deliveries — stock goes UP)
 // ============================================
 model FuelStock {
-  id             Int      @id @default(autoincrement())
-  organisationId Int
-  fuelProductId  Int
-  supplierId     Int
+  id             String   @id @default(uuid())
+  organisationId String
+  fuelProductId  String
+  supplierId     String
   quantityLitres Float
   costPerLitre   Float
   deliveryDate   DateTime @default(now())
@@ -111,8 +112,8 @@ model FuelStock {
 // ATTENDANT
 // ============================================
 model Attendant {
-  id             Int      @id @default(autoincrement())
-  organisationId Int
+  id             String   @id @default(uuid())
+  organisationId String
   fullName       String
   employeeId     String
   pumpAssigned   String?
@@ -130,8 +131,8 @@ model Attendant {
 // CUSTOMER
 // ============================================
 model Customer {
-  id             Int          @id @default(autoincrement())
-  organisationId Int
+  id             String       @id @default(uuid())
+  organisationId String
   fullName       String
   phone          String?
   plateNumber    String?
@@ -151,11 +152,11 @@ enum CustomerType {
 // FUEL SALE (stock goes DOWN)
 // ============================================
 model FuelSale {
-  id             Int           @id @default(autoincrement())
-  organisationId Int
-  fuelProductId  Int
-  attendantId    Int
-  customerId     Int? // nullable for anonymous sales
+  id             String        @id @default(uuid())
+  organisationId String
+  fuelProductId  String
+  attendantId    String
+  customerId     String? // nullable for anonymous sales
   litresSold     Float
   unitPrice      Float // price at time of sale
   totalAmount    Float
@@ -179,9 +180,9 @@ enum PaymentMethod {
 // PAYMENT
 // ============================================
 model Payment {
-  id             Int           @id @default(autoincrement())
-  organisationId Int
-  fuelSaleId     Int           @unique
+  id             String        @id @default(uuid())
+  organisationId String
+  fuelSaleId     String        @unique
   amountPaid     Float
   method         PaymentMethod
   paidAt         DateTime      @default(now())
@@ -195,9 +196,9 @@ model Payment {
 // DAILY SUMMARY
 // ============================================
 model DailySummary {
-  id              Int      @id @default(autoincrement())
-  organisationId  Int
-  fuelProductId   Int
+  id              String   @id @default(uuid())
+  organisationId  String
+  fuelProductId   String
   summaryDate     DateTime @db.Date
   totalLitresSold Float
   totalRevenue    Float
@@ -208,4 +209,24 @@ model DailySummary {
   fuelProduct  FuelProduct  @relation(fields: [fuelProductId], references: [id])
 
   @@unique([organisationId, summaryDate, fuelProductId])
+}
+
+// ============================================
+// Tokens
+// ============================================
+model Token {
+  id             String    @id @default(uuid())
+  key            String    @unique
+  token          String    @unique
+  type           TokenType
+  organisationId String
+  expiresAt      DateTime
+  createdAt      DateTime  @default(now())
+
+  organisation Organisation @relation("OrganisationTokens", fields: [organisationId], references: [id], onDelete: Cascade)
+}
+
+enum TokenType {
+  REFRESH
+  PASSWORD_RESET
 }

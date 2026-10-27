@@ -1,0 +1,14 @@
+import { z } from "zod";
+
+export const RegisterSchema = z.object({
+  name: z.string().trim().min(2, "Station name must be at least 2 characters"),
+  email: z.string().trim().email("Enter a valid email address"),
+  address: z
+    .string()
+    .trim()
+    .min(3, "Address must be at least 3 characters")
+    .optional(),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+export type RegisterFormInput = z.infer<typeof RegisterSchema>;

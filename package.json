@@ -4,9 +4,12 @@
   "workspaces": [
     "apps/client",
     "apps/server",
-    "packages/shared"
+    "packages/constants",
+    "packages/schemas",
+    "packages/types"
   ],
   "scripts": {
+    "build:packages": "npm run build --workspace=packages/constants && npm run build --workspace=packages/schemas && npm run build --workspace=packages/types",
     "client": "npm run dev --workspace=apps/client",
     "server": "npm run dev --workspace=apps/server",
     "dev": "concurrently \"npm run server\" \"npm run client\""
