@@ -1,8 +1,11 @@
+export type CustomerType = "WALK_IN" | "REGISTERED";
+
 export type Customer = {
   id: string;
   organisationId: string;
   fullName: string;
-  phone?: string;
-  plateNumber?: string;
-  customerType: "WALK_IN" | "REGISTERED";
+  phone?: string | null;
+  plateNumber?: string | null;
+  customerType: CustomerType;
+  createdAt: string;
 };

@@ -16,6 +16,7 @@ app.use(cookieParser());
 
 // Routes
 app.use(`/api/${API_VERSION}`, mainRouter);
+
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 

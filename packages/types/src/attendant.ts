@@ -1,9 +1,9 @@
 export type Attendant = {
-  id: number;
-  organisationId: number;
+  id: string;
+  organisationId: string;
   fullName: string;
   employeeId: string;
-  pumpAssigned?: string;
+  pumpAssigned?: string | null;
   phone: string;
   isActive: boolean;
   hireDate: string;

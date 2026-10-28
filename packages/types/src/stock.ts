@@ -1,5 +1,6 @@
-import { FuelProduct } from "./fuelProduct";
-import { Supplier } from "./supplier";
+import type { FuelType } from "./fuelProduct";
+import type { FuelProduct } from "./fuelProduct";
+import type { Supplier } from "./supplier";
 
 export type FuelStock = {
   id: string;
@@ -9,7 +10,7 @@ export type FuelStock = {
   quantityLitres: number;
   costPerLitre: number;
   deliveryDate: string;
-  invoiceNumber?: string;
+  invoiceNumber?: string | null;
   fuelProduct?: FuelProduct;
   supplier?: Supplier;
 };
@@ -17,7 +18,7 @@ export type FuelStock = {
 export type StockBalance = {
   fuelProductId: string;
   fuelProductName: string;
-  fuelType: string;
+  fuelType: FuelType;
   totalDelivered: number;
   totalSold: number;
   currentBalance: number;

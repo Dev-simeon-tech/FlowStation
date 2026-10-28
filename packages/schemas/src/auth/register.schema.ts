@@ -1,14 +1,15 @@
 import { z } from "zod";
+import { ValidationMessages } from "../validation-messages";
 
 export const RegisterSchema = z.object({
-  name: z.string().trim().min(2, "Station name must be at least 2 characters"),
-  email: z.string().trim().email("Enter a valid email address"),
+  name: z.string().trim().min(2, ValidationMessages.REQUIRED),
+  email: z.string().trim().email(ValidationMessages.INVALID_EMAIL),
   address: z
     .string()
     .trim()
-    .min(3, "Address must be at least 3 characters")
+    .min(3, ValidationMessages.ADDRESS_TOO_SHORT)
     .optional(),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z.string().min(6, ValidationMessages.PASSWORD_TOO_SHORT),
 });
 
 export type RegisterFormInput = z.infer<typeof RegisterSchema>;

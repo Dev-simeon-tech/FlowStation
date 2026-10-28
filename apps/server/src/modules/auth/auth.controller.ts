@@ -40,7 +40,7 @@ export class AuthController {
   refresh = async (req: Request, res: Response) => {
     const token = getRefreshTokenFromRequest(req);
     const result = await this.service.refreshAccessToken(token);
-    res.json(result);
+    res.json({ ...result, refreshToken: token });
   };
 
   logout = async (req: Request, res: Response) => {

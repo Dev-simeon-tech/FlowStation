@@ -2,21 +2,23 @@ import { FuelProduct } from "./fuelProduct";
 import { Customer } from "./customer";
 import { Attendant } from "./attendant";
 
+export type PaymentMethod = "CASH" | "CARD" | "TRANSFER";
+
 export type FuelSale = {
   id: string;
   organisationId: string;
   fuelProductId: string;
   attendantId: string;
-  customerId?: string;
+  customerId?: string | null;
   litresSold: number;
   unitPrice: number;
   totalAmount: number;
   saleDate: string;
-  paymentMethod: "CASH" | "CARD" | "TRANSFER";
+  paymentMethod: PaymentMethod;
   fuelProduct?: FuelProduct;
   attendant?: Attendant;
-  customer?: Customer;
-  payment?: Payment;
+  customer?: Customer | null;
+  payment?: Payment | null;
 };
 
 export type Payment = {
@@ -24,7 +26,7 @@ export type Payment = {
   organisationId: string;
   fuelSaleId: string;
   amountPaid: number;
-  method: "CASH" | "CARD" | "TRANSFER";
+  method: PaymentMethod;
   paidAt: string;
-  reference?: string;
+  reference?: string | null;
 };
