@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { apiFetch } from "../lib/api";
-import s from "../styles/shared.module.css";
+import { DatePicker } from "../components/ui/date-picker";
 
 type SummaryType = {
   perFuelType: SummaryRow[];
@@ -60,24 +60,24 @@ export default function Summary() {
 
   return (
     <div>
-      <div className={s.header}>
+      <div className="header">
         <h1>Daily Sales Summary</h1>
         <p>Auto-generated daily totals per fuel product</p>
       </div>
 
       {/* Date picker */}
-      <div className={s.card}>
+      <div className="card">
         <h2>Select Date</h2>
-        <div className={s.formGrid}>
-          <div className={s.formGroup}>
+        <div className="formGrid">
+          <div className="formGroup">
             <label>Date</label>
-            <input
-              type='date'
+            <DatePicker
               value={date}
               max={today}
-              onChange={(e) => {
-                setDate(e.target.value);
-                load(e.target.value);
+              aria-label="Summary date"
+              onChange={(nextDate) => {
+                setDate(nextDate);
+                load(nextDate);
               }}
             />
           </div>
@@ -85,44 +85,44 @@ export default function Summary() {
       </div>
 
       {/* KPI strip */}
-      <div className={s.kpiGrid}>
-        <div className={s.kpiCard}>
-          <div className={s.kpiLabel}>Total Revenue</div>
-          <div className={s.kpiValue}>
+      <div className="kpiGrid">
+        <div className="kpiCard">
+          <div className="kpiLabel">Total Revenue</div>
+          <div className="kpiValue">
             &#8358; {summary?.totals?.totalRevenue.toLocaleString()}
           </div>
-          <div className={s.kpiSub}>{date}</div>
+          <div className="kpiSub">{date}</div>
         </div>
-        <div className={s.kpiCard}>
-          <div className={s.kpiLabel}>Total Litres Sold</div>
-          <div className={s.kpiValue}>
+        <div className="kpiCard">
+          <div className="kpiLabel">Total Litres Sold</div>
+          <div className="kpiValue">
             {summary?.totals?.totalLitresSold.toLocaleString()} L
           </div>
-          <div className={s.kpiSub}>
+          <div className="kpiSub">
             {rows.length} product{rows.length !== 1 ? "s" : ""}
           </div>
         </div>
       </div>
 
       {error && (
-        <p className={s.loginError} style={{ marginBottom: 12 }}>
+        <p className="loginError" style={{ marginBottom: 12 }}>
           {error}
         </p>
       )}
 
       {/* Breakdown table */}
-      <div className={s.card}>
+      <div className="card">
         <h2>Breakdown by Fuel Product</h2>
         {loading ? (
-          <div className={s.empty}>
+          <div className="empty">
             <p>Loading...</p>
           </div>
         ) : rows.length === 0 ? (
-          <div className={s.empty}>
+          <div className="empty">
             <p>No sales recorded for {date}.</p>
           </div>
         ) : (
-          <table className={s.table}>
+          <table className="table">
             <thead>
               <tr>
                 <th>Product</th>
@@ -139,7 +139,7 @@ export default function Summary() {
                   <td>{r.fuelProductName}</td>
                   <td>
                     <span
-                      className={`${s.badge} ${s["badge" + r.fuelType] ?? s.badgeInfo}`}
+                      className={`badge ${(["PETROL", "DIESEL", "KEROSENE"].includes(r.fuelType) ? `badge${r.fuelType}` : "badgeInfo")}`}
                     >
                       {r.fuelType}
                     </span>
@@ -157,7 +157,7 @@ export default function Summary() {
 
       {/* Revenue bar chart (pure CSS) */}
       {rows.length > 0 && summary?.totals && (
-        <div className={s.card}>
+        <div className="card">
           <h2>Revenue by Product</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {rows.map((r) => {
@@ -182,8 +182,11 @@ export default function Summary() {
                       %)
                     </span>
                   </div>
-                  <div className={s.bar}>
-                    <div className={s.barFill} style={{ width: `${pct}%` }} />
+                  <div className="bar">
+                    <div
+                      className={`barFill ${["PETROL", "DIESEL", "KEROSENE"].includes(r.fuelType) ? `barFill${r.fuelType}` : ""}`}
+                      style={{ width: `${pct}%` }}
+                    />
                   </div>
                 </div>
               );

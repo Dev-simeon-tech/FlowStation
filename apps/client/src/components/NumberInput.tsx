@@ -1,19 +1,34 @@
-import { useRef, type InputHTMLAttributes } from 'react';
-import s from '../styles/shared.module.css';
+import { useRef, type InputHTMLAttributes, type Ref } from 'react';
 
 interface NumberInputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
+  ref?: Ref<HTMLInputElement>;
 }
 
-export default function NumberInput({ label, ...props }: NumberInputProps) {
+export default function NumberInput({
+  label,
+  ref: forwardedRef,
+  ...props
+}: NumberInputProps) {
   const ref = useRef<HTMLInputElement>(null);
 
   return (
-    <div className={s.formGroup}>
+    <div className="formGroup">
       {label && <label>{label}</label>}
-      <div className={s.numberInput}>
-        <input ref={ref} type="number" {...props} />
-        <div className={s.numberBtns}>
+      <div className="numberInput">
+        <input
+          ref={(input) => {
+            ref.current = input;
+            if (typeof forwardedRef === 'function') {
+              forwardedRef(input);
+            } else if (forwardedRef) {
+              forwardedRef.current = input;
+            }
+          }}
+          type="number"
+          {...props}
+        />
+        <div className="numberBtns">
           <button type="button" tabIndex={-1} aria-label="Increase"
             onClick={() => {
               ref.current?.stepUp();

@@ -8,8 +8,14 @@ export const CreateCustomerSchema = z.object({
     .string()
     .trim()
     .min(1, ValidationMessages.CUSTOMER_NAME_REQUIRED),
-  phone: z.string().trim().min(1).nullable().optional(),
-  plateNumber: z.string().trim().min(1).nullable().optional(),
+  phone: z.preprocess(
+    (value) => (typeof value === "string" && !value.trim() ? null : value),
+    z.string().trim().min(1).nullable().optional(),
+  ),
+  plateNumber: z.preprocess(
+    (value) => (typeof value === "string" && !value.trim() ? null : value),
+    z.string().trim().min(1).nullable().optional(),
+  ),
   customerType: CustomerTypeSchema.optional(),
 });
 

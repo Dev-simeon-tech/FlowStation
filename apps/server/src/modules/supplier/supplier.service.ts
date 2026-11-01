@@ -7,45 +7,19 @@ export class SupplierService {
   async getSuppliers(organisationId: string) {
     return prisma.supplier.findMany({
       where: { organisationId },
-      include: { fuelTypes: true },
     });
   }
 
   async createSupplier(organisationId: string, input: CreateSupplierInput) {
-    return prisma.$transaction(async (tx) => {
-      if (input.fuelProductId) {
-        const fuelProduct = await tx.fuelProduct.findFirst({
-          where: { id: input.fuelProductId, organisationId },
-          select: { id: true },
-        });
-        if (!fuelProduct) {
-          throw new NotFoundException(SupplierMessages.FUEL_PRODUCT_NOT_FOUND);
-        }
-      }
-
-      const supplier = await tx.supplier.create({
-        data: {
-          companyName: input.companyName,
-          contactPerson: input.contactPerson,
-          email: input.email,
-          phone: input.phone,
-          address: input.address,
-          organisationId,
-        },
-      });
-
-      const fuelTypes = input.fuelProductId
-        ? [
-            await tx.supplierFuelType.create({
-              data: {
-                supplierId: supplier.id,
-                fuelProductId: input.fuelProductId,
-              },
-            }),
-          ]
-        : [];
-
-      return { ...supplier, fuelTypes };
+    return prisma.supplier.create({
+      data: {
+        companyName: input.companyName,
+        contactPerson: input.contactPerson,
+        email: input.email,
+        phone: input.phone,
+        address: input.address,
+        organisationId,
+      },
     });
   }
 
@@ -58,11 +32,6 @@ export class SupplierService {
       throw new NotFoundException(SupplierMessages.NOT_FOUND);
     }
 
-    await prisma.$transaction([
-      prisma.supplierFuelType.deleteMany({
-        where: { supplierId: supplier.id },
-      }),
-      prisma.supplier.delete({ where: { id: supplier.id } }),
-    ]);
+    await prisma.supplier.delete({ where: { id: supplier.id } });
   }
 }

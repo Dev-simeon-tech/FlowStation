@@ -1,31 +1,40 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router-dom";
+import { LoginSchema, type LoginFormInput } from "@flowstation/schemas";
 import { useAuth } from "../contexts/AuthContext";
-import { loginSchema, type LoginFormValues } from "../schema/login.schema";
-import s from "../styles/shared.module.css";
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, user } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [error, setError] = useState("");
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<LoginFormInput>({
+    resolver: zodResolver(LoginSchema),
     defaultValues: { email: "", password: "" },
   });
+  if (user) {
+    navigate("/dashboard", { replace: true });
+  }
 
   useEffect(() => {
     document.title = "Login / FlowStation";
   }, []);
 
-  async function onSubmit(values: LoginFormValues) {
+  async function onSubmit(values: LoginFormInput) {
     setError("");
     try {
       await login(values.email, values.password);
+      const redirect = searchParams.get("redirect");
+      navigate(redirect ? decodeURIComponent(redirect) : "/dashboard", {
+        replace: true,
+      });
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -38,13 +47,13 @@ export default function Login() {
   const btnText = isSubmitting ? "Signing in..." : "Sign in";
 
   return (
-    <div className={s.loginWrap}>
-      <div className={s.loginCard}>
-        <div className={s.loginLogo}>
+    <div className='loginWrap'>
+      <div className='loginCard'>
+        <div className='loginLogo'>
           <img src='/favicon.png' alt='' width={40} height={40} />
         </div>
-        <h1 className={s.loginTitle}>FlowStation</h1>
-        <p className={s.loginSub}>Sign in to your station dashboard</p>
+        <h1 className='loginTitle'>FlowStation</h1>
+        <p className='loginSub'>Sign in to your station dashboard</p>
         {error && (
           <div
             style={{
@@ -60,8 +69,8 @@ export default function Login() {
             />
           </div>
         )}
-        <form onSubmit={handleSubmit(onSubmit)} className={s.loginForm}>
-          <div className={s.formGroup}>
+        <form onSubmit={handleSubmit(onSubmit)} className='loginForm'>
+          <div className='formGroup'>
             <label>Email</label>
             <input
               type='email'
@@ -70,10 +79,10 @@ export default function Login() {
               {...register("email")}
             />
             {errors.email && (
-              <p className={s.loginError}>{errors.email.message}</p>
+              <p className='loginError'>{errors.email.message}</p>
             )}
           </div>
-          <div className={s.formGroup}>
+          <div className='formGroup'>
             <label>Password</label>
             <input
               type='password'
@@ -81,12 +90,12 @@ export default function Login() {
               {...register("password")}
             />
             {errors.password && (
-              <p className={s.loginError}>{errors.password.message}</p>
+              <p className='loginError'>{errors.password.message}</p>
             )}
           </div>
 
           <button
-            className={`${s.btn} ${s.btnPrimary}`}
+            className={`btn btnPrimary`}
             type='submit'
             disabled={isSubmitting}
             style={{ width: "100%", marginTop: 8 }}
@@ -95,10 +104,7 @@ export default function Login() {
           </button>
         </form>
 
-        <p
-          className={s.loginSub}
-          style={{ marginTop: 16, textAlign: "center" }}
-        >
+        <p className='loginSub' style={{ marginTop: 16, textAlign: "center" }}>
           Don&apos;t have an account?{" "}
           <Link to='/register' style={{ color: "var(--accent)" }}>
             Register your station

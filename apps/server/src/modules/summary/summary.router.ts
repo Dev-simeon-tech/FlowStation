@@ -6,13 +6,15 @@ import { SummaryController } from "./summary.controller";
 
 const controller = new SummaryController();
 export const router = Router();
-const SummaryDateSchema = z.object({ date: z.string() });
+const SummaryDateSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Expected date in YYYY-MM-DD format"),
+});
 
 router.use(authMiddleware);
 
 router.get(
   "/",
-  validationMiddleware({ params: SummaryDateSchema }),
+  validationMiddleware({ query: SummaryDateSchema }),
   controller.dailySummary,
 );
 

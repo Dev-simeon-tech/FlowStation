@@ -1,11 +1,8 @@
 import { useState, useEffect } from "react";
 import { apiFetch } from "../lib/api";
-import s from "../styles/shared.module.css";
-import type { DailySummary } from "../types";
+import type { DailySummary } from "@flowstation/types";
 import { groupSummariesByFuelType } from "../utils/groupSummaryData";
 import type { GroupedFuelSummary } from "../utils/groupSummaryData";
-
-// attendantPerformance: { fullName: string; employeeId: string; salesCount: number; totalRevenue: number; totalLitres: number }[];
 
 export default function Reports() {
   useEffect(() => {
@@ -15,7 +12,6 @@ export default function Reports() {
   const [data, setData] = useState<DailySummary[] | []>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
   const [grouped, setGrouped] = useState<GroupedFuelSummary[]>([]);
 
   useEffect(() => {
@@ -29,63 +25,28 @@ export default function Reports() {
   }, []);
 
   // const fmt = (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const handleGenerateSummary = async () => {
-    try {
-      const today = new Date().toISOString();
-      const res = await apiFetch<{ message: "" }>("/api/summaries/generate", {
-        method: "POST",
-        body: JSON.stringify({ today }),
-      });
 
-      setMessage(res.message);
-      setTimeout(() => setMessage(""), 5000);
-    } catch (error) {
-      console.error(error);
-    }
-  };
   return (
     <div>
-      <div className={s.topBar}>
-        {message && (
-          <div
-            className={s.card}
-            style={{
-              background: "#0d2817",
-              border: "1px solid var(--accent)",
-              marginBottom: 12,
-            }}
-          >
-            <p
-              style={{ color: "#3ecf8e" }}
-              dangerouslySetInnerHTML={{ __html: message }}
-            />
-          </div>
-        )}
+      <div className='topBar'>
         <div
-          className={s.header}
+          className='header'
           style={{ display: "flex", justifyContent: "space-between" }}
         >
           <div>
             <h1>Reports</h1>
             <p>Revenue trends and performance analytics</p>
           </div>
-          <button
-            className={`${s.btn} ${s.btnPrimary}`}
-            style={{ fontSize: 16, height: 45 }}
-            onClick={handleGenerateSummary}
-          >
-            Generate Daily Summary
-          </button>
         </div>
-        <div className={s.tabs}>
+        <div className='tabs'>
           <button
-            className={`${s.tab} ${tab === "summary" ? s.tabActive : ""}`}
+            className={`tab ${tab === "summary" ? "tabActive" : ""}`}
             onClick={() => setTab("summary")}
           >
             Daily History
           </button>
           <button
-            className={`${s.tab} ${tab === "charts" ? s.tabActive : ""}`}
+            className={`tab ${tab === "charts" ? "tabActive" : ""}`}
             onClick={() => setTab("charts")}
           >
             Charts
@@ -94,7 +55,7 @@ export default function Reports() {
       </div>
 
       {error && (
-        <p className={s.loginError} style={{ marginBottom: 12 }}>
+        <p className='loginError' style={{ marginBottom: 12 }}>
           {error}
         </p>
       )}
@@ -104,21 +65,21 @@ export default function Reports() {
       {/* Tab: Summary — Attendant performance table */}
       {tab === "summary" && (
         <>
-          {/* <div className={s.card}>
+          {/* <div className="card">
             <h2>Attendant Performance</h2>
             {loading ? (
-              <div className={s.empty}>
+              <div className="empty">
                 <p>Loading...</p>
               </div>
             ) : !data || data.attendantPerformance.length === 0 ? (
-              <div className={s.empty}>
+              <div className="empty">
                 <p>
                   No sales recorded yet. Attendant performance will appear here
                   once transactions are logged.
                 </p>
               </div>
             ) : (
-              <table className={s.table}>
+              <table className="table">
                 <thead>
                   <tr>
                     <th>Attendant</th>
@@ -145,18 +106,18 @@ export default function Reports() {
               </table>
             )}
           </div> */}
-          <div className={s.card}>
+          <div className='card'>
             <h2>Summary History</h2>
             {loading ? (
-              <div className={s.empty}>
+              <div className='empty'>
                 <p>Loading...</p>
               </div>
             ) : data?.length === 0 ? (
-              <div className={s.empty}>
+              <div className='empty'>
                 <p>No History recorded yet.</p>
               </div>
             ) : (
-              <table className={s.table}>
+              <table className='table'>
                 <thead>
                   <tr>
                     <th>Date</th>
@@ -179,7 +140,7 @@ export default function Reports() {
                       <td>{summary.fuelProduct?.name}</td>
                       <td>
                         <span
-                          className={`${s.badge} ${s["badge" + summary.fuelProduct?.type] ?? s.badgeInfo}`}
+                          className={`badge ${["PETROL", "DIESEL", "KEROSENE"].includes(summary.fuelProduct?.type) ? `badge${summary.fuelProduct?.type}` : "badgeInfo"}`}
                         >
                           {summary.fuelProduct?.type}
                         </span>
@@ -199,14 +160,14 @@ export default function Reports() {
 
       {/* Tab: Charts — revenue-by-day SVG bar chart */}
       {tab === "charts" && (
-        <div className={s.card}>
+        <div className='card'>
           <h2>Revenue by Fuel Product</h2>
           {loading ? (
-            <div className={s.empty}>
+            <div className='empty'>
               <p>Loading...</p>
             </div>
           ) : !grouped || grouped.length === 0 ? (
-            <div className={s.empty}>
+            <div className='empty'>
               <p>No data yet.</p>
             </div>
           ) : (
@@ -228,7 +189,7 @@ export default function Reports() {
                       <span>
                         {r.fuelProductName}{" "}
                         <span
-                          className={`${s.badge} ${s["badge" + r.fuelType] ?? s.badgeInfo}`}
+                          className={`badge ${["PETROL", "DIESEL", "KEROSENE"].includes(r.fuelType) ? `badge${r.fuelType}` : "badgeInfo"}`}
                           style={{ marginLeft: 6 }}
                         >
                           {r.fuelType}
@@ -239,8 +200,8 @@ export default function Reports() {
                         {r.totalLitresSold.toLocaleString()} L
                       </span>
                     </div>
-                    <div className={s.bar}>
-                      <div className={s.barFill} style={{ width: `${pct}%` }} />
+                    <div className='bar'>
+                      <div className='barFill' style={{ width: `${pct}%` }} />
                     </div>
                   </div>
                 );

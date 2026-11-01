@@ -1,6 +1,6 @@
 import { SummaryService } from "./summary.service";
 
-// const DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
+const DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
 
 export function startDailySummaryScheduler() {
   const service = new SummaryService();
@@ -36,11 +36,11 @@ export function startDailySummaryScheduler() {
     );
   };
 
-  // const yesterday = new Date(Date.now() - DAY_IN_MILLISECONDS)
-  //   .toISOString()
-  //   .slice(0, 10);
+  const yesterday = new Date(Date.now() - DAY_IN_MILLISECONDS)
+    .toISOString()
+    .slice(0, 10);
 
   // Recover the most recently completed day if the server was offline at midnight.
-  // void saveSummaries(yesterday);
+  void saveSummaries(yesterday);
   scheduleNextRun();
 }

@@ -4,10 +4,13 @@ import type { Request, Response } from "express";
 export class SummaryController {
   private readonly service = new SummaryService();
 
-  dailySummary = async (req: Request<{ date: string }>, res: Response) => {
+  dailySummary = async (
+    req: Request<object, unknown, unknown, { date: string }>,
+    res: Response,
+  ) => {
     const result = await this.service.getDailySummary(
       req.organisation.organisationId,
-      req.params.date,
+      req.query.date,
     );
     res.json(result);
   };

@@ -30,3 +30,21 @@ export type Payment = {
   paidAt: string;
   reference?: string | null;
 };
+
+export type Purchase = {
+  id: number;
+  fuelProductId: number;
+  attendantId: number;
+  customerId: number;
+  litresSold: number;
+  unitPrice: number;
+  totalAmount: number;
+  saleDate: string;
+  paymentMethod: string;
+  fuelProduct: FuelProduct;
+  attendant: {
+    id: number;
+    fullName: string;
+    employeeId: string;
+  };
+};

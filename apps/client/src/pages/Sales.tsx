@@ -1,9 +1,18 @@
 import { useState, useEffect } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
+import { CreateSaleSchema, type CreateSaleInput } from "@flowstation/schemas";
 import { PAYMENT_METHODS } from "../constants";
-import type { FuelSale, FuelProduct, Attendant, Customer } from "../types";
+import type {
+  FuelSale,
+  FuelProduct,
+  Attendant,
+  Customer,
+} from "@flowstation/types";
 import NumberInput from "../components/NumberInput";
 import { apiFetch } from "../lib/api";
-import s from "../styles/shared.module.css";
+import { Select } from "../components/ui/select";
 
 export default function Sales() {
   useEffect(() => {
@@ -18,12 +27,21 @@ export default function Sales() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [form, setForm] = useState({
-    fuelProductId: "",
-    attendantId: "",
-    customerId: "",
-    litresSold: "",
-    paymentMethod: "CASH",
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors: fieldErrors },
+  } = useForm<z.input<typeof CreateSaleSchema>, unknown, CreateSaleInput>({
+    resolver: zodResolver(CreateSaleSchema),
+    defaultValues: {
+      fuelProductId: "",
+      attendantId: "",
+      customerId: "",
+      litresSold: "",
+      paymentMethod: "CASH",
+    },
   });
 
   function loadAll(signal?: AbortSignal) {
@@ -57,32 +75,20 @@ export default function Sales() {
   }, []);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  async function handleSubmit() {
-    if (!form.fuelProductId || !form.attendantId || !form.litresSold) return;
-    const litres = parseFloat(form.litresSold);
-    if (isNaN(litres) || litres <= 0) return;
-
+  async function onSubmit(values: CreateSaleInput) {
     setSubmitting(true);
     setError("");
     try {
       const sale = await apiFetch<FuelSale>("/api/sales/new", {
         method: "POST",
-        body: JSON.stringify({
-          fuelProductId: parseInt(form.fuelProductId),
-          attendantId: parseInt(form.attendantId),
-          customerId: form.customerId ? parseInt(form.customerId) : null,
-          litresSold: litres,
-          paymentMethod: form.paymentMethod,
-        }),
+        body: JSON.stringify(values),
       });
       setSales((prev) => [sale, ...prev]);
-      const product = products.find(
-        (p) => p.id === parseInt(form.fuelProductId),
-      );
+      const product = products.find((p) => p.id === values.fuelProductId);
       setMessage(
-        `Sale recorded: ${litres.toLocaleString()}L${product ? ` of ${product.name}` : ""} for &#8358;${sale.totalAmount.toLocaleString()}`,
+        `Sale recorded: ${values.litresSold.toLocaleString()}L${product ? ` of ${product.name}` : ""} for &#8358;${sale.totalAmount.toLocaleString()}`,
       );
-      setForm({
+      reset({
         fuelProductId: "",
         attendantId: "",
         customerId: "",
@@ -91,6 +97,7 @@ export default function Sales() {
       });
       setTimeout(() => setMessage(""), 5000);
     } catch (e) {
+      // console.log(e.message);
       setError(e instanceof Error ? e.message : "Failed to record sale");
     } finally {
       setSubmitting(false);
@@ -99,20 +106,20 @@ export default function Sales() {
 
   return (
     <div>
-      <div className={s.topBar}>
-        <div className={s.header}>
+      <div className='topBar'>
+        <div className='header'>
           <h1>Sales</h1>
           <p>Record sales and view payment history</p>
         </div>
-        <div className={s.tabs}>
+        <div className='tabs'>
           <button
-            className={`${s.tab} ${tab === "sale" ? s.tabActive : ""}`}
+            className={`tab ${tab === "sale" ? "tabActive" : ""}`}
             onClick={() => setTab("sale")}
           >
             New Sale
           </button>
           <button
-            className={`${s.tab} ${tab === "payments" ? s.tabActive : ""}`}
+            className={`tab ${tab === "payments" ? "tabActive" : ""}`}
             onClick={() => setTab("payments")}
           >
             Payments
@@ -122,7 +129,7 @@ export default function Sales() {
 
       {message && (
         <div
-          className={s.card}
+          className='card'
           style={{
             background: "#0d2817",
             border: "1px solid var(--accent)",
@@ -136,124 +143,176 @@ export default function Sales() {
         </div>
       )}
       {error && (
-        <p className={s.loginError} style={{ marginBottom: 12 }}>
+        <p className='loginError text-base' style={{ marginBottom: 12 }}>
           {error}
         </p>
       )}
 
       {tab === "sale" && (
         <>
-          <div className={s.card}>
+          <div className='card'>
             <h2>New Sale</h2>
-            <div className={s.formGrid}>
-              <div className={s.formGroup}>
-                <label>Fuel Product</label>
-                <select
-                  value={form.fuelProductId}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, fuelProductId: e.target.value }))
-                  }
-                >
-                  <option value=''>
-                    {products.length === 0
-                      ? "No products - add one first"
-                      : "Select product..."}
-                  </option>
-                  {products.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name} (&#8358;{p.pricePerLitre}/L)
-                    </option>
-                  ))}
-                </select>
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <div className='formGrid'>
+                <div className='formGroup'>
+                  <label>Fuel Product</label>
+                  <Controller
+                    control={control}
+                    name='fuelProductId'
+                    render={({ field }) => (
+                      <Select
+                        name={field.name}
+                        value={
+                          typeof field.value === "string" ? field.value : ""
+                        }
+                        onValueChange={field.onChange}
+                        onBlur={field.onBlur}
+                        inputRef={field.ref}
+                        aria-label='Fuel Product'
+                        placeholder={
+                          products.length === 0
+                            ? "No products - add one first"
+                            : "Select product..."
+                        }
+                        options={products.map((product) => ({
+                          value: product.id,
+                          label: `${product.name} (₦${product.pricePerLitre}/L)`,
+                        }))}
+                      />
+                    )}
+                  />
+                  {fieldErrors.fuelProductId && (
+                    <p className='loginError'>
+                      {fieldErrors.fuelProductId.message}
+                    </p>
+                  )}
+                </div>
+                <div className='formGroup'>
+                  <label>Attendant</label>
+                  <Controller
+                    control={control}
+                    name='attendantId'
+                    render={({ field }) => (
+                      <Select
+                        name={field.name}
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        onBlur={field.onBlur}
+                        inputRef={field.ref}
+                        aria-label='Attendant'
+                        placeholder={
+                          attendants.some((attendant) => attendant.isActive)
+                            ? "Select attendant..."
+                            : "No active attendants"
+                        }
+                        options={attendants
+                          .filter((attendant) => attendant.isActive)
+                          .map((attendant) => ({
+                            value: attendant.id,
+                            label: `${attendant.fullName} (${attendant.employeeId})`,
+                          }))}
+                      />
+                    )}
+                  />
+                  {fieldErrors.attendantId && (
+                    <p className='loginError'>
+                      {fieldErrors.attendantId.message}
+                    </p>
+                  )}
+                </div>
+                <div className='formGroup'>
+                  <label>Customer (optional)</label>
+                  <Controller
+                    control={control}
+                    name='customerId'
+                    render={({ field }) => (
+                      <Select
+                        name={field.name}
+                        value={
+                          typeof field.value === "string" ? field.value : ""
+                        }
+                        onValueChange={field.onChange}
+                        onBlur={field.onBlur}
+                        inputRef={field.ref}
+                        aria-label='Customer'
+                        placeholder='Walk-in / Anonymous'
+                        options={[
+                          { value: "", label: "Walk-in / Anonymous" },
+                          ...customers.map((customer) => ({
+                            value: customer.id,
+                            label: `${customer.fullName}${customer.plateNumber ? ` (${customer.plateNumber})` : ""}`,
+                          })),
+                        ]}
+                      />
+                    )}
+                  />
+                  {fieldErrors.customerId && (
+                    <p className='loginError'>
+                      {fieldErrors.customerId.message}
+                    </p>
+                  )}
+                </div>
+                <NumberInput
+                  label='Litres Sold'
+                  step='0.01'
+                  min='0'
+                  placeholder='0'
+                  {...register("litresSold")}
+                />
+                {fieldErrors.litresSold && (
+                  <p className='loginError'>{fieldErrors.litresSold.message}</p>
+                )}
+                <div className='formGroup'>
+                  <label>Payment Method</label>
+                  <Controller
+                    control={control}
+                    name='paymentMethod'
+                    render={({ field }) => (
+                      <Select
+                        name={field.name}
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        onBlur={field.onBlur}
+                        inputRef={field.ref}
+                        aria-label='Payment Method'
+                        options={PAYMENT_METHODS.map((method) => ({
+                          value: method,
+                          label: method,
+                        }))}
+                      />
+                    )}
+                  />
+                  {fieldErrors.paymentMethod && (
+                    <p className='loginError'>
+                      {fieldErrors.paymentMethod.message}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div className={s.formGroup}>
-                <label>Attendant</label>
-                <select
-                  value={form.attendantId}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, attendantId: e.target.value }))
-                  }
+              <div className='formActions'>
+                <button
+                  className={`btn btnPrimary`}
+                  disabled={submitting}
+                  type='submit'
                 >
-                  <option value=''>
-                    {attendants.filter((a) => a.isActive).length === 0
-                      ? "No active attendants"
-                      : "Select attendant..."}
-                  </option>
-                  {attendants
-                    .filter((a) => a.isActive)
-                    .map((a) => (
-                      <option key={a.id} value={a.id}>
-                        {a.fullName} ({a.employeeId})
-                      </option>
-                    ))}
-                </select>
+                  {submitting ? "Recording..." : "Record Sale"}
+                </button>
               </div>
-              <div className={s.formGroup}>
-                <label>Customer (optional)</label>
-                <select
-                  value={form.customerId}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, customerId: e.target.value }))
-                  }
-                >
-                  <option value=''>Walk-in / Anonymous</option>
-                  {customers.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.fullName}
-                      {c.plateNumber ? ` (${c.plateNumber})` : ""}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <NumberInput
-                label='Litres Sold'
-                step='0.01'
-                min='0'
-                placeholder='0'
-                value={form.litresSold}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, litresSold: e.target.value }))
-                }
-              />
-              <div className={s.formGroup}>
-                <label>Payment Method</label>
-                <select
-                  value={form.paymentMethod}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, paymentMethod: e.target.value }))
-                  }
-                >
-                  {PAYMENT_METHODS.map((m) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <div className={s.formActions}>
-              <button
-                className={`${s.btn} ${s.btnPrimary}`}
-                onClick={handleSubmit}
-                disabled={submitting}
-              >
-                {submitting ? "Recording..." : "Record Sale"}
-              </button>
-            </div>
+            </form>
           </div>
 
-          <div className={s.card}>
+          <div className='card'>
             <h2>Recent Sales</h2>
             {loading ? (
-              <div className={s.empty}>
+              <div className='empty'>
                 <p>Loading...</p>
               </div>
             ) : sales.length === 0 ? (
-              <div className={s.empty}>
+              <div className='empty'>
                 <p>No sales recorded yet.</p>
               </div>
             ) : (
-              <table className={s.table}>
+              <table className='table'>
                 <thead>
                   <tr>
                     <th>Date</th>
@@ -274,7 +333,7 @@ export default function Sales() {
                       <td>{sale.litresSold.toLocaleString()}</td>
                       <td>&#8358;{sale.totalAmount.toLocaleString()}</td>
                       <td>
-                        <span className={`${s.badge} ${s.badgeInfo}`}>
+                        <span className={`badge badgeInfo`}>
                           {sale.paymentMethod}
                         </span>
                       </td>
@@ -315,37 +374,37 @@ function PaymentsTab({
 
   return (
     <>
-      <div className={s.kpiGrid}>
-        <div className={s.kpiCard}>
-          <div className={s.kpiLabel}>Total Collected</div>
-          <div className={s.kpiValue}>&#8358;{total.toLocaleString()}</div>
+      <div className='kpiGrid'>
+        <div className='kpiCard'>
+          <div className='kpiLabel'>Total Collected</div>
+          <div className='kpiValue'>&#8358;{total.toLocaleString()}</div>
         </div>
-        <div className={s.kpiCard}>
-          <div className={s.kpiLabel}>Cash</div>
-          <div className={s.kpiValue}>&#8358;{cash.toLocaleString()}</div>
+        <div className='kpiCard'>
+          <div className='kpiLabel'>Cash</div>
+          <div className='kpiValue'>&#8358;{cash.toLocaleString()}</div>
         </div>
-        <div className={s.kpiCard}>
-          <div className={s.kpiLabel}>Card</div>
-          <div className={s.kpiValue}>&#8358;{card.toLocaleString()}</div>
+        <div className='kpiCard'>
+          <div className='kpiLabel'>Card</div>
+          <div className='kpiValue'>&#8358;{card.toLocaleString()}</div>
         </div>
-        <div className={s.kpiCard}>
-          <div className={s.kpiLabel}>Transfer</div>
-          <div className={s.kpiValue}>&#8358;{transfer.toLocaleString()}</div>
+        <div className='kpiCard'>
+          <div className='kpiLabel'>Transfer</div>
+          <div className='kpiValue'>&#8358;{transfer.toLocaleString()}</div>
         </div>
       </div>
 
-      <div className={s.card}>
+      <div className='card'>
         <h2>All Payments</h2>
         {loading ? (
-          <div className={s.empty}>
+          <div className='empty'>
             <p>Loading...</p>
           </div>
         ) : sales.length === 0 ? (
-          <div className={s.empty}>
+          <div className='empty'>
             <p>No payments recorded yet.</p>
           </div>
         ) : (
-          <table className={s.table}>
+          <table className='table'>
             <thead>
               <tr>
                 <th>Date</th>
@@ -361,7 +420,7 @@ function PaymentsTab({
                 <tr key={sale.id}>
                   <td>{new Date(sale.saleDate).toLocaleString("en-GB")}</td>
                   <td>
-                    <span className={`${s.badge} ${s.badgeInfo}`}>
+                    <span className={`badge badgeInfo`}>
                       {sale.paymentMethod}
                     </span>
                   </td>

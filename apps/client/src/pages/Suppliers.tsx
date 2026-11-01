@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
-import type { Supplier } from "../types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import {
+  CreateSupplierSchema,
+  type CreateSupplierInput,
+} from "@flowstation/schemas";
+import type { Supplier } from "@flowstation/types";
 import { apiFetch } from "../lib/api";
-import s from "../styles/shared.module.css";
 
 export default function Suppliers() {
   useEffect(() => {
@@ -9,12 +15,24 @@ export default function Suppliers() {
   }, []);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [message, setMessage] = useState("");
-  const [form, setForm] = useState({
-    companyName: "",
-    contactPerson: "",
-    phone: "",
-    email: "",
-    address: "",
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors: fieldErrors },
+  } = useForm<
+    z.input<typeof CreateSupplierSchema>,
+    unknown,
+    CreateSupplierInput
+  >({
+    resolver: zodResolver(CreateSupplierSchema),
+    defaultValues: {
+      companyName: "",
+      contactPerson: "",
+      phone: "",
+      email: "",
+      address: "",
+    },
   });
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -28,7 +46,7 @@ export default function Suppliers() {
   }, []);
 
   function resetForm() {
-    setForm({
+    reset({
       companyName: "",
       contactPerson: "",
       phone: "",
@@ -38,7 +56,7 @@ export default function Suppliers() {
     setError("");
   }
 
-  async function deleteSupplier(id: number) {
+  async function deleteSupplier(id: string) {
     try {
       const res = await apiFetch<{ message: string }>(`/api/suppliers/${id}`, {
         method: "DELETE",
@@ -52,17 +70,17 @@ export default function Suppliers() {
       );
     }
   }
-  async function handleSubmit() {
-    if (!form.companyName || !form.contactPerson || !form.phone) return;
+  async function onSubmit(values: CreateSupplierInput) {
     setSubmitting(true);
     setError("");
     try {
       const created = await apiFetch<Supplier>("/api/suppliers/new", {
         method: "POST",
-        body: JSON.stringify(form),
+        body: JSON.stringify(values),
       });
       setSuppliers((prev) => [...prev, created]);
-
+      setMessage("Supplier added successfully");
+      setTimeout(() => setMessage(""), 5000);
       resetForm();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to save supplier");
@@ -75,7 +93,7 @@ export default function Suppliers() {
     <div>
       {message && (
         <div
-          className={s.card}
+          className="card"
           style={{
             background: "#0d2817",
             border: "1px solid var(--accent)",
@@ -88,98 +106,89 @@ export default function Suppliers() {
           />
         </div>
       )}
-      <div className={s.header}>
+      <div className="header">
         <h1>Supplier Management</h1>
         <p>Add and edit fuel suppliers</p>
       </div>
 
-      <div className={s.card}>
+      <div className="card">
         <h2>Add Supplier</h2>
-        <div className={s.formGrid}>
-          <div className={s.formGroup}>
+        <form onSubmit={handleSubmit(onSubmit)}>
+        <div className="formGrid">
+          <div className="formGroup">
             <label>Company Name</label>
             <input
               type='text'
               placeholder='e.g. Oando PLC'
-              value={form.companyName}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, companyName: e.target.value }))
-              }
+              {...register("companyName")}
             />
+            {fieldErrors.companyName && <p className="loginError">{fieldErrors.companyName.message}</p>}
           </div>
-          <div className={s.formGroup}>
+          <div className="formGroup">
             <label>Contact Person</label>
             <input
               type='text'
               placeholder='Full name'
-              value={form.contactPerson}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, contactPerson: e.target.value }))
-              }
+              {...register("contactPerson")}
             />
+            {fieldErrors.contactPerson && <p className="loginError">{fieldErrors.contactPerson.message}</p>}
           </div>
-          <div className={s.formGroup}>
+          <div className="formGroup">
             <label>Phone</label>
             <input
               type='text'
               placeholder='0803-XXX-XXXX'
-              value={form.phone}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, phone: e.target.value }))
-              }
+              {...register("phone")}
             />
+            {fieldErrors.phone && <p className="loginError">{fieldErrors.phone.message}</p>}
           </div>
-          <div className={s.formGroup}>
+          <div className="formGroup">
             <label>Email</label>
             <input
               type='email'
               placeholder='email@company.com'
-              value={form.email}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, email: e.target.value }))
-              }
+              {...register("email")}
             />
+            {fieldErrors.email && <p className="loginError">{fieldErrors.email.message}</p>}
           </div>
-          <div className={s.formGroup}>
+          <div className="formGroup">
             <label>Address</label>
             <input
               type='text'
               placeholder='Office address'
-              value={form.address}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, address: e.target.value }))
-              }
+              {...register("address")}
             />
           </div>
         </div>
         {error && (
-          <p className={s.loginError} style={{ marginTop: 8 }}>
+          <p className="loginError" style={{ marginTop: 8 }}>
             {error}
           </p>
         )}
-        <div className={s.formActions}>
+        <div className="formActions">
           <button
-            className={`${s.btn} ${s.btnPrimary}`}
-            onClick={handleSubmit}
+            className={`btn btnPrimary`}
+            type='submit'
             disabled={submitting}
           >
             {submitting ? "Saving..." : "Add Supplier"}
           </button>
         </div>
+        </form>
       </div>
 
-      <div className={s.card}>
+      <div className="card">
         <h2>Suppliers</h2>
         {loading ? (
-          <div className={s.empty}>
+          <div className="empty">
             <p>Loading...</p>
           </div>
         ) : suppliers.length === 0 ? (
-          <div className={s.empty}>
+          <div className="empty">
             <p>No suppliers yet.</p>
           </div>
         ) : (
-          <table className={s.table}>
+          <table className="table">
             <thead>
               <tr>
                 <th>Company</th>
@@ -202,7 +211,7 @@ export default function Suppliers() {
                   <td>{p.createdAt?.slice(0, 10)}</td>
                   <td>
                     <button
-                      className={`${s.btn}`}
+                      className={`btn`}
                       style={{ background: "red", color: "#fff" }}
                       onClick={() => deleteSupplier(p.id)}
                     >

@@ -1,37 +1,10 @@
-export interface Summary {
-  id: number;
-  organisationId: number;
-  fuelProductId: number;
-  summaryDate: string;
-  totalLitresSold: number;
-  totalRevenue: number;
-  openingStock: number;
-  closingStock: number;
-  fuelProduct: {
-    id: number;
-    name: string;
-    type: string;
-    pricePerLitre: number;
-  };
-}
-
-export interface DailyRevenueBar {
-  date: string; // formatted  e.g. "Jun 15"
-  fullDate: string; // raw        e.g. "2026-06-15"
-  totalRevenue: number;
-  breakdown: {
-    // per fuel type — useful for tooltip on the bar chart
-    fuelType: string;
-    fuelName: string;
-    revenue: number;
-  }[];
-}
+import type { DailySummary, DailyRevenueBar } from "@flowstation/types";
 
 export const getLast7DaysRevenue = (
-  summaries: Summary[],
+  summaries: DailySummary[],
 ): DailyRevenueBar[] => {
   // 1. group all records by their date (YYYY-MM-DD)
-  const groupedByDate = summaries.reduce<Record<string, Summary[]>>(
+  const groupedByDate = summaries.reduce<Record<string, DailySummary[]>>(
     (acc, summary) => {
       const dateKey = summary.summaryDate.split("T")[0]; // "2026-07-09"
       if (!acc[dateKey]) acc[dateKey] = [];
@@ -47,7 +20,7 @@ export const getLast7DaysRevenue = (
       const totalRevenue = records.reduce((sum, r) => sum + r.totalRevenue, 0);
 
       const breakdown = records.map((r) => ({
-        fuelType: r.fuelProduct.type,
+        fuelType: r?.fuelProduct.type,
         fuelName: r.fuelProduct.name,
         revenue: r.totalRevenue,
       }));

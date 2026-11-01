@@ -47,7 +47,6 @@ This project was built as a group academic assignment to demonstrate relational 
 ### 🚚 Supplier Management
 
 - Register fuel suppliers with contact details
-- Link each supplier to the fuel types they supply (many-to-many via SupplierFuelType)
 - View all deliveries made by a supplier
 
 ### 📦 Fuel Stock (Inventory)
@@ -141,14 +140,13 @@ This project was built as a group academic assignment to demonstrate relational 
 
 ## 🗄 Database Schema
 
-The database has 10 tables all scoped to an `Organisation`:
+The database has 9 tables all scoped to an `Organisation`:
 
 ```
 Organisation ──┬──► FuelProduct ──┬──► FuelStock
                │                  ├──► FuelSale ──► Payment
                │                  ├──► DailySummary
-               │                  └──► SupplierFuelType
-               ├──► Supplier ─────────► SupplierFuelType
+               ├──► Supplier ─────────► FuelStock
                ├──► Attendant ────────► FuelSale
                └──► Customer ─────────► FuelSale
 ```

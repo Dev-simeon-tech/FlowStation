@@ -51,7 +51,6 @@ model FuelProduct {
   stocks        FuelStock[]
   sales         FuelSale[]
   summaries     DailySummary[]
-  supplierLinks SupplierFuelType[]
 }
 
 enum FuelType {
@@ -75,18 +74,6 @@ model Supplier {
 
   organisation Organisation       @relation(fields: [organisationId], references: [id])
   deliveries   FuelStock[]
-  fuelTypes    SupplierFuelType[]
-}
-
-model SupplierFuelType {
-  id            String @id @default(uuid())
-  supplierId    String
-  fuelProductId String
-
-  supplier    Supplier    @relation(fields: [supplierId], references: [id])
-  fuelProduct FuelProduct @relation(fields: [fuelProductId], references: [id])
-
-  @@unique([supplierId, fuelProductId])
 }
 
 // ============================================

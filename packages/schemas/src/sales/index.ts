@@ -6,8 +6,18 @@ const PaymentMethodSchema = z.enum(["CASH", "CARD", "TRANSFER"]);
 export const CreateSaleSchema = z.object({
   fuelProductId: z.string().uuid(),
   attendantId: z.string().uuid(),
-  customerId: z.string().uuid().nullable().optional(),
-  litresSold: z.number().positive(ValidationMessages.SALE_QUANTITY_INVALID),
+  customerId: z.preprocess(
+    (value) => (typeof value === "string" && !value.trim() ? null : value),
+    z.string().uuid().nullable().optional(),
+  ),
+  litresSold: z.preprocess(
+    (value) => (value === "" || value == null ? Number.NaN : Number(value)),
+    z
+      .number({
+        invalid_type_error: ValidationMessages.SALE_QUANTITY_INVALID,
+      })
+      .positive(ValidationMessages.SALE_QUANTITY_INVALID),
+  ),
   paymentMethod: PaymentMethodSchema,
   isPaid: z.boolean().default(true),
 });

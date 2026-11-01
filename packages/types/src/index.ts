@@ -6,3 +6,4 @@ export * from "./sales";
 export * from "./stock";
 export * from "./summary";
 export * from "./auth";
+export * from "./profile";

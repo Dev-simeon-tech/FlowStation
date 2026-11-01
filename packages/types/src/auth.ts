@@ -8,7 +8,7 @@ export type Organisation = {
 
 export type AuthResponse = {
   organisation: Organisation;
-  accesstoken: string;
+  accessToken: string;
   refreshToken: string;
 };
 export type AuthResult = {

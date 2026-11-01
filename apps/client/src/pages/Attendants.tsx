@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
-import type { Attendant } from "../types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import {
+  CreateAttendantSchema,
+  type CreateAttendantInput,
+} from "@flowstation/schemas";
+import type { Attendant } from "@flowstation/types";
 import { apiFetch } from "../lib/api";
-import s from "../styles/shared.module.css";
 
 export default function Attendants() {
   useEffect(() => {
@@ -9,11 +14,19 @@ export default function Attendants() {
   }, []);
   const [attendants, setAttendants] = useState<Attendant[]>([]);
   const [editing, setEditing] = useState<Attendant | null>(null);
-  const [form, setForm] = useState({
-    fullName: "",
-    employeeId: "",
-    pumpAssigned: "",
-    phone: "",
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors: fieldErrors },
+  } = useForm<CreateAttendantInput>({
+    resolver: zodResolver(CreateAttendantSchema),
+    defaultValues: {
+      fullName: "",
+      employeeId: "",
+      pumpAssigned: "",
+      phone: "",
+    },
   });
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -28,14 +41,14 @@ export default function Attendants() {
   }, []);
 
   function resetForm() {
-    setForm({ fullName: "", employeeId: "", pumpAssigned: "", phone: "" });
+    reset({ fullName: "", employeeId: "", pumpAssigned: "", phone: "" });
     setEditing(null);
     setError("");
   }
 
   function handleEdit(a: Attendant) {
     setEditing(a);
-    setForm({
+    reset({
       fullName: a.fullName,
       employeeId: a.employeeId,
       pumpAssigned: a.pumpAssigned || "",
@@ -44,8 +57,7 @@ export default function Attendants() {
     setError("");
   }
 
-  async function handleSubmit() {
-    if (!form.fullName || !form.employeeId || !form.phone) return;
+  async function onSubmit(values: CreateAttendantInput) {
     setSubmitting(true);
     setError("");
     try {
@@ -54,7 +66,7 @@ export default function Attendants() {
           `/api/attendants/edit/${editing.id}`,
           {
             method: "PUT",
-            body: JSON.stringify(form),
+            body: JSON.stringify(values),
           },
         );
         setAttendants((prev) =>
@@ -65,7 +77,7 @@ export default function Attendants() {
       } else {
         const created = await apiFetch<Attendant>("/api/attendants/new", {
           method: "POST",
-          body: JSON.stringify(form),
+          body: JSON.stringify(values),
         });
         setAttendants((prev) => [...prev, created]);
         setMessage("Attendant registered successfully");
@@ -98,7 +110,7 @@ export default function Attendants() {
     <div>
       {message && (
         <div
-          className={s.card}
+          className="card"
           style={{
             background: "#0d2817",
             border: "1px solid var(--accent)",
@@ -111,68 +123,60 @@ export default function Attendants() {
           />
         </div>
       )}
-      <div className={s.header}>
+      <div className="header">
         <h1>Attendant Registration</h1>
         <p>Register and manage pump staff</p>
       </div>
 
-      <div className={s.card}>
+      <div className="card">
         <h2>{editing ? "Edit Attendant" : "Register Attendant"}</h2>
-        <div className={s.formGrid}>
-          <div className={s.formGroup}>
+        <form onSubmit={handleSubmit(onSubmit)}>
+        <div className="formGrid">
+          <div className="formGroup">
             <label>Full Name</label>
             <input
               type='text'
               placeholder='Full name'
-              value={form.fullName}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, fullName: e.target.value }))
-              }
+              {...register("fullName")}
             />
+            {fieldErrors.fullName && <p className="loginError">{fieldErrors.fullName.message}</p>}
           </div>
-          <div className={s.formGroup}>
+          <div className="formGroup">
             <label>Employee ID</label>
             <input
               type='text'
               placeholder='e.g. ATT-004'
-              value={form.employeeId}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, employeeId: e.target.value }))
-              }
+              {...register("employeeId")}
             />
+            {fieldErrors.employeeId && <p className="loginError">{fieldErrors.employeeId.message}</p>}
           </div>
-          <div className={s.formGroup}>
+          <div className="formGroup">
             <label>Pump Assigned</label>
             <input
               type='text'
               placeholder='e.g. Pump 4'
-              value={form.pumpAssigned}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, pumpAssigned: e.target.value }))
-              }
+              {...register("pumpAssigned")}
             />
           </div>
-          <div className={s.formGroup}>
+          <div className="formGroup">
             <label>Phone</label>
             <input
               type='text'
               placeholder='0804-XXX-XXXX'
-              value={form.phone}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, phone: e.target.value }))
-              }
+              {...register("phone")}
             />
+            {fieldErrors.phone && <p className="loginError">{fieldErrors.phone.message}</p>}
           </div>
         </div>
         {error && (
-          <p className={s.loginError} style={{ marginTop: 8 }}>
+          <p className="loginError" style={{ marginTop: 8 }}>
             {error}
           </p>
         )}
-        <div className={s.formActions}>
+        <div className="formActions">
           <button
-            className={`${s.btn} ${s.btnPrimary}`}
-            onClick={handleSubmit}
+            className={`btn btnPrimary`}
+            type='submit'
             disabled={submitting}
           >
             {submitting
@@ -182,25 +186,26 @@ export default function Attendants() {
                 : "Register Attendant"}
           </button>
           {editing && (
-            <button className={`${s.btn} ${s.btnDanger}`} onClick={resetForm}>
+            <button type='button' className={`btn btnDanger`} onClick={resetForm}>
               Cancel
             </button>
           )}
         </div>
+        </form>
       </div>
 
-      <div className={s.card}>
+      <div className="card">
         <h2>Attendants</h2>
         {loading ? (
-          <div className={s.empty}>
+          <div className="empty">
             <p>Loading...</p>
           </div>
         ) : attendants.length === 0 ? (
-          <div className={s.empty}>
+          <div className="empty">
             <p>No attendants registered yet.</p>
           </div>
         ) : (
-          <table className={s.table}>
+          <table className="table">
             <thead>
               <tr>
                 <th>Name</th>
@@ -222,7 +227,7 @@ export default function Attendants() {
                   <td>{a.hireDate?.slice(0, 10)}</td>
                   <td>
                     <span
-                      className={`${s.badge} ${a.isActive ? s.badgeSuccess : s.badgeDanger}`}
+                      className={`badge ${a.isActive ? "badgeSuccess" : "badgeDanger"}`}
                     >
                       {a.isActive ? "Active" : "Inactive"}
                     </span>
@@ -230,14 +235,14 @@ export default function Attendants() {
                   <td style={{ display: "flex", gap: 6 }}>
                     {/* FIX: was btnDanger — Edit should be the primary action */}
                     <button
-                      className={`${s.btn} ${s.btnPrimary}`}
+                      className={`btn btnPrimary`}
                       style={{ fontSize: 12, padding: "4px 10px" }}
                       onClick={() => handleEdit(a)}
                     >
                       Edit
                     </button>
                     <button
-                      className={`${s.btn} ${s.btnDanger}`}
+                      className={`btn btnDanger`}
                       style={{ fontSize: 12, padding: "4px 10px" }}
                       onClick={() => toggleActive(a)}
                     >

@@ -1,39 +1,45 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router-dom";
+import { RegisterSchema, type RegisterFormInput } from "@flowstation/schemas";
 import { useAuth } from "../contexts/AuthContext";
-import {
-  registerSchema,
-  type RegisterFormValues,
-} from "../schema/register.schema";
-import s from "../styles/shared.module.css";
 
 export default function Register() {
-  const { register: registerUser } = useAuth();
+  const { register: registerUser, user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [error, setError] = useState("");
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema),
+  } = useForm<RegisterFormInput>({
+    resolver: zodResolver(RegisterSchema),
     defaultValues: { name: "", email: "", address: "", password: "" },
   });
+  if (user) {
+    navigate("/dashboard", { replace: true });
+  }
 
   useEffect(() => {
     document.title = "Register / FlowStation";
   }, []);
 
-  async function onSubmit(values: RegisterFormValues) {
+  async function onSubmit(values: RegisterFormInput) {
     setError("");
     try {
       await registerUser(
         values.name,
         values.email,
         values.password,
-        values.address,
+        values.address ?? "",
       );
+      const redirect = searchParams.get("redirect");
+      navigate(redirect ? decodeURIComponent(redirect) : "/dashboard", {
+        replace: true,
+      });
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -46,13 +52,13 @@ export default function Register() {
   const btnText = isSubmitting ? "Creating account..." : "Register";
 
   return (
-    <div className={s.loginWrap}>
-      <div className={s.loginCard}>
-        <div className={s.loginLogo}>
+    <div className='loginWrap'>
+      <div className='loginCard'>
+        <div className='loginLogo'>
           <img src='/favicon.png' alt='' width={40} height={40} />
         </div>
-        <h1 className={s.loginTitle}>FlowStation</h1>
-        <p className={s.loginSub}>Register your station</p>
+        <h1 className='loginTitle'>FlowStation</h1>
+        <p className='loginSub'>Register your station</p>
 
         {error && (
           <div
@@ -70,8 +76,8 @@ export default function Register() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className={s.loginForm}>
-          <div className={s.formGroup}>
+        <form onSubmit={handleSubmit(onSubmit)} className='loginForm'>
+          <div className='formGroup'>
             <label>Station Name</label>
             <input
               type='text'
@@ -79,11 +85,9 @@ export default function Register() {
               autoFocus
               {...register("name")}
             />
-            {errors.name && (
-              <p className={s.loginError}>{errors.name.message}</p>
-            )}
+            {errors.name && <p className='loginError'>{errors.name.message}</p>}
           </div>
-          <div className={s.formGroup}>
+          <div className='formGroup'>
             <label>Email</label>
             <input
               type='email'
@@ -91,10 +95,10 @@ export default function Register() {
               {...register("email")}
             />
             {errors.email && (
-              <p className={s.loginError}>{errors.email.message}</p>
+              <p className='loginError'>{errors.email.message}</p>
             )}
           </div>
-          <div className={s.formGroup}>
+          <div className='formGroup'>
             <label>Address</label>
             <input
               type='text'
@@ -102,11 +106,11 @@ export default function Register() {
               {...register("address")}
             />
             {errors.address && (
-              <p className={s.loginError}>{errors.address.message}</p>
+              <p className='loginError'>{errors.address.message}</p>
             )}
           </div>
 
-          <div className={s.formGroup}>
+          <div className='formGroup'>
             <label>Password</label>
             <input
               type='password'
@@ -114,11 +118,11 @@ export default function Register() {
               {...register("password")}
             />
             {errors.password && (
-              <p className={s.loginError}>{errors.password.message}</p>
+              <p className='loginError'>{errors.password.message}</p>
             )}
           </div>
           <button
-            className={`${s.btn} ${s.btnPrimary}`}
+            className={`btn btnPrimary`}
             type='submit'
             disabled={isSubmitting}
             style={{ width: "100%", marginTop: 8 }}
@@ -127,10 +131,7 @@ export default function Register() {
           </button>
         </form>
 
-        <p
-          className={s.loginSub}
-          style={{ marginTop: 16, textAlign: "center" }}
-        >
+        <p className='loginSub' style={{ marginTop: 16, textAlign: "center" }}>
           Already have an account?{" "}
           <Link to='/login' style={{ color: "var(--accent)" }}>
             Sign in
