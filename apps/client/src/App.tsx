@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./contexts/AuthContext";
+import { Spinner } from "./components/ui/spinner";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -13,28 +14,30 @@ import Sales from "./pages/Sales";
 import Customers from "./pages/Customers";
 import Summary from "./pages/Summary";
 import Reports from "./pages/Reports";
-import Settings from "./pages/Settings";
+import Profile from "./pages/Profile";
+import Home from "./pages/Home";
 
 export default function App() {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
 
-  if (loading) return null;
-
-  if (!user) {
+  if (loading) {
     return (
-      <Routes>
-        <Route path='/login' element={<Login />} />
-        <Route path='/register' element={<Register />} />
-        <Route path='*' element={<Navigate to='/login' replace />} />
-      </Routes>
+      <main
+        role='status'
+        aria-live='polite'
+        className='flex h-screen w-screen items-center justify-center'
+      >
+        <Spinner className='text-emerald-400 size-8' />
+      </main>
     );
   }
 
   return (
     <Routes>
-      <Route path='/' element={<Layout />}>
+      <Route path='/' element={<Home />} />
+      <Route element={<Layout />}>
         <Route
-          index
+          path='/dashboard'
           element={
             <ProtectedRoute roles={["ADMIN", "MANAGER", "ATTENDANT"]}>
               <Dashboard />
@@ -106,14 +109,18 @@ export default function App() {
           }
         />
         <Route
-          path='settings'
+          path='profile'
           element={
             <ProtectedRoute roles={["ADMIN", "MANAGER"]}>
-              <Settings />
+              <Profile />
             </ProtectedRoute>
           }
         />
+        <Route path="settings" element={<Navigate to="/profile" replace />} />
       </Route>
+
+      <Route path='/login' element={<Login />} />
+      <Route path='/register' element={<Register />} />
       <Route path='*' element={<Navigate to='/' replace />} />
     </Routes>
   );

@@ -1,4 +1,4 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import type { ReactNode } from "react";
 
@@ -9,12 +9,17 @@ interface Props {
 
 export default function ProtectedRoute({ children }: Props) {
   const { user } = useAuth();
+  const location = useLocation();
 
   if (!user) {
-    return <Navigate to='/login' replace />;
+    const currentPath = `${location.pathname}${location.search}${location.hash}`;
+    return (
+      <Navigate
+        to={`/login?redirect=${encodeURIComponent(currentPath)}`}
+        replace
+      />
+    );
   }
-
-  // return <Navigate to='/' replace />;
 
   return <>{children}</>;
 }

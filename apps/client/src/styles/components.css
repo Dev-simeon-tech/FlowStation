@@ -1,0 +1,646 @@
+@theme inline {
+  --color-app-bg: var(--bg);
+  --color-app-sidebar: var(--sidebar-bg);
+  --color-app-sidebar-text: var(--sidebar-text);
+  --color-app-card: var(--card-bg);
+  --color-app-text: var(--text);
+  --color-app-muted: var(--text-secondary);
+  --color-app-border: var(--border);
+  --color-app-accent: var(--accent);
+  --color-app-accent-hover: var(--accent-hover);
+  --color-app-accent-text: var(--accent-text);
+  --color-app-danger: var(--danger);
+  --color-app-success: var(--success);
+  --color-app-warning: var(--warning);
+  --shadow-app: var(--shadow);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer components {
+  .header {
+    @apply mb-8;
+    animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .header h1 {
+    @apply text-2xl font-bold leading-tight text-app-text;
+    letter-spacing: -0.6px;
+    line-height: 1.3;
+  }
+
+  .header p {
+    @apply mt-1 text-sm text-app-muted;
+    letter-spacing: -0.2px;
+  }
+
+  .card {
+    @apply mb-4 rounded-2xl bg-app-card p-7 shadow-app;
+    border: none;
+    animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    transition:
+      transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .card:has(table) {
+    @apply overflow-y-auto;
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 16px 36px rgba(0, 0, 0, 0.04),
+      0 1px 2px rgba(0, 0, 0, 0.01);
+  }
+
+  .card h2 {
+    @apply mb-5 text-xs font-semibold uppercase text-app-muted;
+    letter-spacing: 1px;
+  }
+
+  .kpiGrid {
+    @apply mb-7 grid gap-4;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .kpiCard {
+    @apply rounded-2xl bg-app-card px-7 py-6 shadow-app;
+    border: none;
+    animation: fadeInUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+    transition:
+      transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .kpiCard:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      0 20px 40px rgba(0, 0, 0, 0.06),
+      0 1px 3px rgba(0, 0, 0, 0.01);
+  }
+
+  .kpiLabel {
+    @apply mb-2 text-[11px] font-semibold uppercase text-app-muted;
+    letter-spacing: 0.8px;
+  }
+
+  .kpiValue {
+    @apply text-[32px] font-light leading-none text-app-text;
+    letter-spacing: -1px;
+  }
+
+  .kpiSub {
+    @apply mt-1.5 text-xs text-app-muted;
+  }
+
+  .table {
+    @apply w-full border-collapse text-[13px];
+  }
+
+  .table th,
+  .table td {
+    @apply border-b border-app-border px-4 py-3 text-left;
+  }
+
+  .table th {
+    @apply bg-transparent text-[11px] uppercase text-app-muted;
+    letter-spacing: 0.5px;
+  }
+
+  .table tr td {
+    transition: background 0.1s;
+  }
+
+  .table tr:hover td {
+    background: var(--table-hover);
+  }
+
+  .badge {
+    @apply inline-block rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  .badgeSuccess {
+    background: var(--badge-success-bg);
+    color: var(--badge-success-color);
+  }
+
+  .badgeWarning {
+    background: var(--badge-warning-bg);
+    color: var(--badge-warning-color);
+  }
+
+  .badgeDanger {
+    background: var(--badge-danger-bg);
+    color: var(--badge-danger-color);
+  }
+
+  .badgeInfo {
+    background: var(--badge-info-bg);
+    color: var(--badge-info-color);
+  }
+
+  .badgePETROL {
+    background: rgba(22, 163, 74, 0.1);
+    color: #15803d;
+  }
+
+  .dark .badgePETROL {
+    background: rgba(74, 222, 128, 0.16);
+    color: #4ade80;
+  }
+
+  .badgeDIESEL {
+    background: rgba(37, 99, 235, 0.1);
+    color: #1d4ed8;
+  }
+
+  .dark .badgeDIESEL {
+    background: rgba(96, 165, 250, 0.16);
+    color: #60a5fa;
+  }
+
+  .badgeKEROSENE {
+    background: rgba(234, 179, 8, 0.16);
+    color: #a16207;
+  }
+
+  .dark .badgeKEROSENE {
+    background: rgba(250, 204, 21, 0.16);
+    color: #facc15;
+  }
+
+  .formGrid {
+    @apply grid gap-5;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .formGroup {
+    @apply mt-2.5 flex flex-col;
+  }
+
+  .formGroup label {
+    @apply mb-1.5 text-[11px] uppercase text-app-muted;
+    letter-spacing: 0.4px;
+  }
+
+  .formGroup input,
+  .formGroup textarea,
+  .formGroup select {
+    @apply rounded-lg border border-app-border bg-app-bg px-3.5 py-2.5 text-sm text-app-text transition;
+    font-family: inherit;
+  }
+
+  .formGroup input::placeholder,
+  .formGroup textarea::placeholder {
+    color: #3a3a3a;
+  }
+
+  .formGroup input::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(0.8);
+    cursor: pointer;
+    opacity: 0.6;
+  }
+
+  .formGroup input:hover,
+  .formGroup textarea:hover,
+  .formGroup select:hover {
+    border-color: #333;
+  }
+
+  .formGroup input:focus,
+  .formGroup textarea:focus,
+  .formGroup select:focus {
+    @apply border-app-accent outline-none;
+    box-shadow: 0 0 0 3px rgba(62, 207, 142, 0.1);
+  }
+
+  .formGroup select {
+    @apply cursor-pointer appearance-none;
+    padding-right: 36px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23525252' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+  }
+
+  .formGroup select option {
+    @apply bg-app-card p-2 text-app-text;
+  }
+
+  .numberInput {
+    @apply relative flex;
+  }
+
+  .numberInput input {
+    @apply flex-1 rounded-l-lg border border-app-border bg-app-bg px-3.5 py-2.5 text-sm text-app-text transition;
+    -moz-appearance: textfield;
+  }
+
+  .numberInput input::-webkit-inner-spin-button,
+  .numberInput input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .numberInput input:hover {
+    border-color: #d6d3d1;
+  }
+
+  .numberInput input:focus {
+    @apply border-app-accent outline-none;
+    box-shadow: 0 0 0 3px rgba(62, 207, 142, 0.1);
+  }
+
+  .numberBtns {
+    @apply flex flex-col overflow-hidden rounded-r-lg border border-l-0 border-app-border;
+  }
+
+  .numberBtns button {
+    @apply flex flex-1 cursor-pointer items-center justify-center border-0 bg-app-card p-0 text-app-muted transition;
+    width: 30px;
+    font-size: 9px;
+  }
+
+  .numberBtns button:first-child {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .numberBtns button:hover {
+    @apply bg-app-accent text-white;
+  }
+
+  .btn {
+    @apply cursor-pointer rounded-lg border-0 px-5 py-2.5 text-[13px] transition;
+    font-family: inherit;
+  }
+
+  .btn:active {
+    transform: scale(0.98);
+  }
+
+  .btnPrimary {
+    @apply border border-emerald-500/20 bg-app-accent text-app-accent-text;
+    box-shadow:
+      0 0 0 1px rgba(16, 185, 129, 0.04),
+      0 4px 14px rgba(16, 185, 129, 0.1);
+    transition:
+      background-color 0.2s ease,
+      box-shadow 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .btnPrimary:hover {
+    @apply bg-app-accent-hover;
+    box-shadow:
+      0 0 0 1px rgba(16, 185, 129, 0.16),
+      0 0 18px rgba(16, 185, 129, 0.24),
+      0 6px 20px rgba(16, 185, 129, 0.16);
+  }
+
+  .btnDanger {
+    @apply border border-app-border bg-transparent text-app-muted;
+  }
+
+  .btnDanger:hover {
+    background: var(--btn-hover-bg);
+    @apply text-app-text;
+  }
+
+  .formActions {
+    @apply mt-5 flex gap-2.5;
+  }
+
+  .empty {
+    @apply px-5 py-16 text-center text-app-muted;
+  }
+
+  .empty p {
+    @apply text-[13px];
+  }
+
+  .topBar {
+    position: static;
+    @apply mb-4 bg-transparent pb-2;
+  }
+
+  .tabs {
+    @apply mt-3 inline-flex items-center gap-1 rounded-xl p-1;
+    background: var(--btn-hover-bg);
+  }
+
+  .tab {
+    @apply cursor-pointer rounded-lg border-0 bg-transparent px-4 py-1.5 text-[13px] font-medium text-app-muted transition;
+    font-family: inherit;
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .tab:hover {
+    @apply text-app-text;
+  }
+
+  .tabActive {
+    @apply bg-app-card text-app-text;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+
+  .loginWrap {
+    @apply flex min-h-screen items-center justify-center bg-app-bg p-8;
+  }
+
+  .loginCard {
+    @apply rounded-xl border border-app-border bg-app-card p-10 text-center;
+    width: 380px;
+  }
+
+  .loginLogo {
+    @apply mb-5;
+  }
+
+  .loginLogo img {
+    @apply mx-auto block;
+  }
+
+  .loginTitle {
+    @apply mb-1 text-[22px] text-app-text;
+    letter-spacing: -0.5px;
+  }
+
+  .loginSub {
+    @apply mb-7 text-sm text-app-muted;
+  }
+
+  .loginForm {
+    @apply text-left;
+  }
+
+  .loginError {
+    @apply mt-1 text-[13px] text-app-danger;
+  }
+
+  .successMsg {
+    @apply text-app-success;
+  }
+
+  .customerHeader {
+    @apply mb-4 flex items-start justify-between;
+  }
+
+  .customerMeta {
+    @apply flex flex-wrap gap-3 text-[13px] text-app-muted;
+  }
+
+  .customerTotal {
+    @apply text-right;
+  }
+
+  .customerTotalLabel {
+    @apply text-[13px] text-app-muted;
+  }
+
+  .customerTotalValue {
+    @apply text-xl text-app-text;
+  }
+
+  .customerTotalSub {
+    @apply text-xs text-app-muted;
+  }
+
+  .chartPlaceholder {
+    @apply flex h-[180px] items-center justify-center rounded-lg border border-dashed border-app-border bg-app-card text-[13px] text-app-muted;
+  }
+
+  .bar {
+    @apply h-6 overflow-hidden rounded;
+    background: var(--progress-bg);
+  }
+
+  .barFill {
+    @apply h-full rounded bg-app-accent;
+  }
+
+  .barFillSuccess,
+  .barFillAccent {
+    @apply bg-app-accent;
+  }
+
+  .barFillWarning {
+    @apply bg-app-warning;
+  }
+
+  .barFillPETROL {
+    background-color: #16a34a;
+  }
+
+  .dark .barFillPETROL {
+    background-color: #4ade80;
+  }
+
+  .barFillDIESEL {
+    background-color: #2563eb;
+  }
+
+  .dark .barFillDIESEL {
+    background-color: #60a5fa;
+  }
+
+  .barFillKEROSENE {
+    background-color: #eab308;
+  }
+
+  .dark .barFillKEROSENE {
+    background-color: #facc15;
+  }
+
+  .appLayout {
+    @apply flex h-full flex-col;
+  }
+
+  .appTopBar {
+    @apply flex h-12 shrink-0 items-center justify-between bg-app-bg;
+    padding: 0 16px 0 8px;
+    border: none;
+  }
+
+  .appTopLeft,
+  .appTopLogo {
+    @apply flex items-center;
+  }
+
+  .appTopLogo img {
+    @apply block h-6 w-6;
+    filter: var(--logo-filter);
+    transition: filter 0.3s ease;
+  }
+
+  .appProfileWrap {
+    @apply relative;
+  }
+
+  .appProfileBtn,
+  .appAvatar {
+    @apply h-7 w-7 rounded-full;
+  }
+
+  .appProfileBtn {
+    @apply cursor-pointer overflow-hidden border-0 bg-transparent p-0;
+  }
+
+  .appAvatar {
+    @apply flex items-center justify-center text-base font-semibold bg-emerald-400 text-white;
+    font-family: inherit;
+  }
+
+  .appProfileBtn:hover .appAvatar {
+    opacity: 0.85;
+  }
+
+  .appDropdown {
+    @apply absolute right-0 top-9 z-30 min-w-[200px] overflow-hidden rounded-2xl border border-app-border bg-app-card shadow-app;
+  }
+
+  .appDropdownHeader {
+    @apply border-b border-app-border px-4 py-2.5 text-xs uppercase text-app-muted;
+    letter-spacing: 0.5px;
+  }
+
+  .appDropdownSep {
+    @apply h-px bg-app-border;
+  }
+
+  .appDropdownItem {
+    @apply block w-full cursor-pointer border-0 bg-transparent px-4 py-2.5 text-left text-[13px] text-app-text transition;
+    font-family: inherit;
+  }
+
+  .appDropdownItem:hover {
+    @apply bg-app-bg;
+  }
+
+  .appBody {
+    @apply flex flex-1 overflow-hidden;
+  }
+
+  .appMain {
+    @apply flex-1 overflow-y-auto;
+    padding: 32px 40px 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .appFooter {
+    @apply mt-auto py-8 text-center text-[11px] font-medium text-app-muted;
+    padding-bottom: 24px;
+    letter-spacing: 0.3px;
+  }
+
+  .appContentWrap {
+    @apply flex flex-1 flex-col overflow-hidden;
+  }
+
+  .appSidebar {
+    @apply flex w-12 shrink-0 flex-col overflow-hidden text-app-sidebar-text;
+    background: var(--sidebar-bg);
+    border-right: none;
+    transition: width 0.2s ease;
+  }
+
+  .appSidebar:hover {
+    width: 150px;
+  }
+
+  .appNav {
+    @apply flex flex-1 flex-col overflow-y-auto py-2;
+  }
+
+  .appNavLink {
+    @apply flex items-center gap-2.5 whitespace-nowrap px-4 py-3.5 text-[15px] no-underline transition;
+    color: var(--sidebar-text);
+    transition-property: background, color, box-shadow;
+  }
+
+  .appNavLink:hover {
+    @apply bg-app-bg;
+    color: var(--sidebar-active);
+  }
+
+  .appNavLink.active {
+    color: var(--sidebar-active);
+    background: var(--sidebar-active-bg);
+    box-shadow: inset 2px 0 0 var(--sidebar-active);
+  }
+
+  .appNavIcon {
+    @apply flex h-5 w-5 shrink-0 items-center justify-center;
+    color: currentColor;
+    opacity: 0.8;
+    transition:
+      opacity 0.15s,
+      filter 0.15s;
+  }
+
+  .appNavLink:hover .appNavIcon,
+  .appNavLink.active .appNavIcon {
+    opacity: 1;
+  }
+
+  .appNavLink.active .appNavIcon {
+    filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.35));
+  }
+
+  .appNavIcon svg {
+    @apply block;
+  }
+
+  .appNavLabel {
+    @apply overflow-hidden;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .appSidebar:hover .appNavLabel {
+    opacity: 1;
+  }
+
+  .appThemeToggleBtn {
+    @apply flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-app-border bg-app-card text-app-text transition;
+  }
+
+  .appThemeToggleBtn:hover {
+    @apply border-emerald-500/30 bg-app-bg;
+    color: var(--sidebar-active);
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.16);
+  }
+
+  .appProfileBtn:focus-visible,
+  .appThemeToggleBtn:focus-visible {
+    @apply outline-none ring-2 ring-emerald-500/50 ring-offset-2 ring-offset-app-bg;
+  }
+
+  .appProfileBtn:hover .appAvatar {
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+  }
+}
+
+@media (max-width: 640px) {
+  .card {
+    @apply p-4;
+  }
+
+  .formGrid {
+    @apply flex flex-col;
+  }
+
+  .appMain {
+    @apply p-4;
+  }
+}

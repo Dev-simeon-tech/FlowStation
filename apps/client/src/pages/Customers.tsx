@@ -1,8 +1,15 @@
 import { useState, useEffect } from "react";
-import { CUSTOMER_TYPES } from "../constants";
-import type { Customer, FuelProduct } from "../types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
+import {
+  CreateCustomerSchema,
+  type CreateCustomerInput,
+} from "@flowstation/schemas";
+import { CUSTOMER_TYPES } from "@flowstation/constants";
+import type { Customer, Purchase } from "@flowstation/types";
 import { apiFetch } from "../lib/api";
-import s from "../styles/shared.module.css";
+import { Select } from "../components/ui/select";
 
 type CustomerPurchases = {
   summary: {
@@ -13,23 +20,6 @@ type CustomerPurchases = {
   purchases: Purchase[];
 };
 
-type Purchase = {
-  id: number;
-  fuelProductId: number;
-  attendantId: number;
-  customerId: number;
-  litresSold: number;
-  unitPrice: number;
-  totalAmount: number;
-  saleDate: string;
-  paymentMethod: string;
-  fuelProduct: FuelProduct;
-  attendant: {
-    id: number;
-    fullName: string;
-    employeeId: string;
-  };
-};
 export default function Customers() {
   useEffect(() => {
     document.title = "customers";
@@ -40,11 +30,24 @@ export default function Customers() {
     useState<CustomerPurchases | null>(null);
   const [loadingPurchases, setLoadingPurchases] = useState(false);
   const [editing, setEditing] = useState<Customer | null>(null);
-  const [form, setForm] = useState({
-    fullName: "",
-    phone: "",
-    plateNumber: "",
-    customerType: "WALK_IN",
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors: fieldErrors },
+  } = useForm<
+    z.input<typeof CreateCustomerSchema>,
+    unknown,
+    CreateCustomerInput
+  >({
+    resolver: zodResolver(CreateCustomerSchema),
+    defaultValues: {
+      fullName: "",
+      phone: "",
+      plateNumber: "",
+      customerType: "WALK_IN",
+    },
   });
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -68,7 +71,7 @@ export default function Customers() {
   }
 
   function resetForm() {
-    setForm({
+    reset({
       fullName: "",
       phone: "",
       plateNumber: "",
@@ -80,7 +83,7 @@ export default function Customers() {
 
   function handleEdit(c: Customer) {
     setEditing(c);
-    setForm({
+    reset({
       fullName: c.fullName,
       phone: c.phone || "",
       plateNumber: c.plateNumber || "",
@@ -89,8 +92,7 @@ export default function Customers() {
     setError("");
   }
 
-  async function handleSubmit() {
-    if (!form.fullName) return;
+  async function onSubmit(values: CreateCustomerInput) {
     setSubmitting(true);
     setError("");
     try {
@@ -99,7 +101,7 @@ export default function Customers() {
           `/api/customers/edit/${editing.id}`,
           {
             method: "PUT",
-            body: JSON.stringify(form),
+            body: JSON.stringify(values),
           },
         );
         setCustomers((prev) =>
@@ -111,7 +113,7 @@ export default function Customers() {
       } else {
         const created = await apiFetch<Customer>("/api/customers/new", {
           method: "POST",
-          body: JSON.stringify(form),
+          body: JSON.stringify(values),
         });
         setCustomers((prev) => [...prev, created]);
         setMessage("Customer registered successfully");
@@ -129,7 +131,7 @@ export default function Customers() {
     <div>
       {message && (
         <div
-          className={s.card}
+          className="card"
           style={{
             background: "#0d2817",
             border: "1px solid var(--accent)",
@@ -142,73 +144,75 @@ export default function Customers() {
           />
         </div>
       )}
-      <div className={s.header}>
+      <div className="header">
         <h1>Customer Purchase Record</h1>
         <p>Register customers and view their purchase history</p>
       </div>
 
       {/* Add / Edit form */}
-      <div className={s.card}>
+      <div className="card">
         <h2>{editing ? "Edit Customer" : "Add Customer"}</h2>
-        <div className={s.formGrid}>
-          <div className={s.formGroup}>
+        <form onSubmit={handleSubmit(onSubmit)}>
+        <div className="formGrid">
+          <div className="formGroup">
             <label>Full Name</label>
             <input
               type='text'
               placeholder='Customer name'
-              value={form.fullName}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, fullName: e.target.value }))
-              }
+              {...register("fullName")}
             />
+            {fieldErrors.fullName && <p className="loginError">{fieldErrors.fullName.message}</p>}
           </div>
-          <div className={s.formGroup}>
+          <div className="formGroup">
             <label>Phone</label>
             <input
               type='text'
               placeholder='0803-XXX-XXXX'
-              value={form.phone}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, phone: e.target.value }))
-              }
+              {...register("phone")}
             />
+            {fieldErrors.phone && <p className="loginError">{fieldErrors.phone.message}</p>}
           </div>
-          <div className={s.formGroup}>
+          <div className="formGroup">
             <label>Plate Number</label>
             <input
               type='text'
               placeholder='e.g. ABC-123-XY'
-              value={form.plateNumber}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, plateNumber: e.target.value }))
-              }
+              {...register("plateNumber")}
             />
+            {fieldErrors.plateNumber && <p className="loginError">{fieldErrors.plateNumber.message}</p>}
           </div>
-          <div className={s.formGroup}>
+          <div className="formGroup">
             <label>Customer Type</label>
-            <select
-              value={form.customerType}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, customerType: e.target.value }))
-              }
-            >
-              {CUSTOMER_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t.replace("_", " ")}
-                </option>
-              ))}
-            </select>
+            <Controller
+              control={control}
+              name="customerType"
+              render={({ field }) => (
+                <Select
+                  name={field.name}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  onBlur={field.onBlur}
+                  inputRef={field.ref}
+                  aria-label="Customer Type"
+                  options={CUSTOMER_TYPES.map((type) => ({
+                    value: type,
+                    label: type.replace("_", " "),
+                  }))}
+                />
+              )}
+            />
+            {fieldErrors.customerType && <p className="loginError">{fieldErrors.customerType.message}</p>}
           </div>
         </div>
         {error && (
-          <p className={s.loginError} style={{ marginTop: 8 }}>
+          <p className="loginError" style={{ marginTop: 8 }}>
             {error}
           </p>
         )}
-        <div className={s.formActions}>
+        <div className="formActions">
           <button
-            className={`${s.btn} ${s.btnPrimary}`}
-            onClick={handleSubmit}
+            className={`btn btnPrimary`}
+            type='submit'
             disabled={submitting}
           >
             {submitting
@@ -218,26 +222,27 @@ export default function Customers() {
                 : "Add Customer"}
           </button>
           {editing && (
-            <button className={`${s.btn} ${s.btnDanger}`} onClick={resetForm}>
+            <button type='button' className={`btn btnDanger`} onClick={resetForm}>
               Cancel
             </button>
           )}
         </div>
+        </form>
       </div>
 
       {/* Customer list */}
-      <div className={s.card}>
+      <div className="card">
         <h2>Customers</h2>
         {loading ? (
-          <div className={s.empty}>
+          <div className="empty">
             <p>Loading...</p>
           </div>
         ) : customers.length === 0 ? (
-          <div className={s.empty}>
+          <div className="empty">
             <p>No customers registered yet. Add one above.</p>
           </div>
         ) : (
-          <table className={s.table}>
+          <table className="table">
             <thead>
               <tr>
                 <th>Name</th>
@@ -256,7 +261,7 @@ export default function Customers() {
                   <td>{c.plateNumber || "-"}</td>
                   <td>
                     <span
-                      className={`${s.badge} ${c.customerType === "REGISTERED" ? s.badgeSuccess : s.badgeInfo}`}
+                      className={`badge ${c.customerType === "REGISTERED" ? "badgeSuccess" : "badgeInfo"}`}
                     >
                       {c.customerType.replace("_", " ")}
                     </span>
@@ -264,14 +269,14 @@ export default function Customers() {
                   <td>{c.createdAt?.slice(0, 10)}</td>
                   <td style={{ display: "flex", gap: 6 }}>
                     <button
-                      className={`${s.btn} ${s.btnPrimary}`}
+                      className={`btn btnPrimary`}
                       style={{ fontSize: 12, padding: "4px 10px" }}
                       onClick={() => viewPurchases(c)}
                     >
                       History
                     </button>
                     <button
-                      className={`${s.btn} ${s.btnDanger}`}
+                      className={`btn btnDanger`}
                       style={{ fontSize: 12, padding: "4px 10px" }}
                       onClick={() => handleEdit(c)}
                     >
@@ -287,21 +292,21 @@ export default function Customers() {
 
       {/* Purchase history panel */}
       {selected && (
-        <div className={s.card}>
-          <div className={s.customerHeader}>
+        <div className="card">
+          <div className="customerHeader">
             <div>
               <h2>{selected.fullName} - Purchase History</h2>
-              <div className={s.customerMeta}>
+              <div className="customerMeta">
                 {selected.phone && <span>{selected.phone}</span>}
                 {selected.plateNumber && <span>🚗 {selected.plateNumber}</span>}
               </div>
             </div>
-            <div className={s.customerTotal}>
-              <div className={s.customerTotalLabel}>Total Spent</div>
-              <div className={s.customerTotalValue}>
+            <div className="customerTotal">
+              <div className="customerTotalLabel">Total Spent</div>
+              <div className="customerTotalValue">
                 &#8358;{customerPurchases?.summary.totalSpent.toLocaleString()}
               </div>
-              <div className={s.customerTotalSub}>
+              <div className="customerTotalSub">
                 {customerPurchases?.summary.totalLitresBought.toLocaleString()}{" "}
                 L across {customerPurchases?.purchases.length} transaction
                 {customerPurchases?.purchases.length !== 1 ? "s" : ""}
@@ -310,15 +315,15 @@ export default function Customers() {
           </div>
 
           {loadingPurchases && !customerPurchases ? (
-            <div className={s.empty}>
+            <div className="empty">
               <p>Loading...</p>
             </div>
           ) : customerPurchases?.purchases.length === 0 ? (
-            <div className={s.empty}>
+            <div className="empty">
               <p>No purchases recorded for this customer.</p>
             </div>
           ) : (
-            <table className={s.table}>
+            <table className="table">
               <thead>
                 <tr>
                   <th>Date</th>
@@ -337,7 +342,7 @@ export default function Customers() {
                     <td>{p.litresSold.toLocaleString()}</td>
                     <td>&#8358;{p.totalAmount.toLocaleString()}</td>
                     <td>
-                      <span className={`${s.badge} ${s.badgeInfo}`}>
+                      <span className={`badge badgeInfo`}>
                         {p.paymentMethod}
                       </span>
                     </td>
@@ -348,9 +353,9 @@ export default function Customers() {
             </table>
           )}
 
-          <div className={s.formActions}>
+          <div className="formActions">
             <button
-              className={`${s.btn} ${s.btnDanger}`}
+              className={`btn btnDanger`}
               onClick={() => {
                 setSelected(null);
                 setCustomerPurchases(null);

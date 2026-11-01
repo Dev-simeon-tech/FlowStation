@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
+import type { DailySummary, DailyRevenueBar } from "@flowstation/types";
 import { apiFetch } from "../lib/api";
-import s from "../styles/shared.module.css";
-import type { DailyRevenueBar, Summary } from "../utils/getLast7DaysRevenue";
+
 import { getLast7DaysRevenue } from "../utils/getLast7DaysRevenue";
 import {
   BarChart,
@@ -55,13 +55,13 @@ export default function Dashboard() {
   const [chartData, setChartData] = useState<DailyRevenueBar[]>([]);
 
   useEffect(() => {
-    apiFetch<Summary[]>("/api/summaries/history")
+    apiFetch<DailySummary[]>("/api/summaries/history")
       .then((data) => setChartData(getLast7DaysRevenue(data)))
       .catch(console.error);
   }, []);
 
   useEffect(() => {
-    const today = new Date().toISOString();
+    const today = new Date().toISOString().split("T")[0];
     apiFetch<DashboardKPIs>(`/api/summaries?date=${today}`)
       .then(setKpis)
       .catch((e) => setError(e.message))
@@ -76,7 +76,7 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div className={s.header}>
+      <div className='header'>
         <h1>Dashboard</h1>
         <p>
           Overview of station operations -{" "}
@@ -90,47 +90,47 @@ export default function Dashboard() {
       </div>
 
       {error && (
-        <p className={s.loginError} style={{ marginBottom: 16 }}>
+        <p className='loginError' style={{ marginBottom: 16 }}>
           {error}
         </p>
       )}
 
-      <div className={s.kpiGrid}>
-        <div className={s.kpiCard}>
-          <div className={s.kpiLabel}>Today&apos;s Revenue</div>
-          <div className={s.kpiValue}>
+      <div className='kpiGrid'>
+        <div className='kpiCard'>
+          <div className='kpiLabel'>Today&apos;s Revenue</div>
+          <div className='kpiValue'>
             {loading ? "..." : `₦ ${fmt(kpis?.totals.totalRevenue ?? 0)}`}
           </div>
         </div>
 
-        <div className={s.kpiCard}>
-          <div className={s.kpiLabel}>Litres Sold Today</div>
-          <div className={s.kpiValue}>
+        <div className='kpiCard'>
+          <div className='kpiLabel'>Litres Sold Today</div>
+          <div className='kpiValue'>
             {loading
               ? "..."
               : `${(kpis?.totals.totalLitresSold ?? 0).toLocaleString()} L`}
           </div>
         </div>
 
-        <div className={s.kpiCard}>
-          <div className={s.kpiLabel}>Fuel Products</div>
-          <div className={s.kpiValue}>
+        <div className='kpiCard'>
+          <div className='kpiLabel'>Fuel Products</div>
+          <div className='kpiValue'>
             {loading ? "..." : (kpis?.perFuelType.length ?? 0)}
           </div>
         </div>
 
-        <div className={s.kpiCard}>
-          <div className={s.kpiLabel}>Number of Sales</div>
-          <div className={s.kpiValue}>
+        <div className='kpiCard'>
+          <div className='kpiLabel'>Number of Sales</div>
+          <div className='kpiValue'>
             {loading ? "..." : (kpis?.totals.numberOfSales ?? 0)}
           </div>
         </div>
       </div>
 
-      <div className={s.card}>
+      <div className='card'>
         <h2>Revenue Overview</h2>
         {chartData.length === 0 ? (
-          <div className={s.empty}>
+          <div className='empty'>
             <p>No revenue data available for the last 7 days.</p>
           </div>
         ) : (
@@ -156,7 +156,7 @@ export default function Dashboard() {
               <Bar
                 dataKey='totalRevenue'
                 barSize={45}
-                fill='#5C4BC2'
+                fill='#6ee7b7'
                 radius={[6, 6, 0, 0]}
                 background={false}
               />

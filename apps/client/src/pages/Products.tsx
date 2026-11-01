@@ -1,8 +1,15 @@
 import { useState, useEffect } from "react";
-import { FUEL_TYPES } from "../constants";
-import type { FuelProduct } from "../types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
+import {
+  CreateFuelProductSchema,
+  type CreateFuelProductInput,
+} from "@flowstation/schemas";
+import { FUEL_TYPES } from "@flowstation/constants";
+import type { FuelProduct } from "@flowstation/types";
 import { apiFetch } from "../lib/api";
-import s from "../styles/shared.module.css";
+import { Select } from "../components/ui/select";
 
 export default function Products() {
   useEffect(() => {
@@ -11,10 +18,19 @@ export default function Products() {
   const [products, setProducts] = useState<FuelProduct[]>([]);
   const [editing, setEditing] = useState<FuelProduct | null>(null);
   const [message, setMessage] = useState("");
-  const [form, setForm] = useState({
-    name: "",
-    type: "PETROL",
-    pricePerLitre: "",
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors: fieldErrors },
+  } = useForm<
+    z.input<typeof CreateFuelProductSchema>,
+    unknown,
+    CreateFuelProductInput
+  >({
+    resolver: zodResolver(CreateFuelProductSchema),
+    defaultValues: { name: "", type: "PETROL", pricePerLitre: "" },
   });
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -28,11 +44,11 @@ export default function Products() {
   }, []);
 
   function resetForm() {
-    setForm({ name: "", type: "PETROL", pricePerLitre: "" });
+    reset({ name: "", type: "PETROL", pricePerLitre: "" });
     setEditing(null);
     setError("");
   }
-  const deleteFuelProduct = async (id: number) => {
+  const deleteFuelProduct = async (id: string) => {
     try {
       const res = await apiFetch<{ message: "" }>(`/api/products/${id}`, {
         method: "DELETE",
@@ -47,7 +63,7 @@ export default function Products() {
 
   function handleEdit(p: FuelProduct) {
     setEditing(p);
-    setForm({
+    reset({
       name: p.name,
       type: p.type,
       pricePerLitre: String(p.pricePerLitre),
@@ -55,10 +71,7 @@ export default function Products() {
     setError("");
   }
 
-  async function handleSubmit() {
-    if (!form.name || !form.pricePerLitre) return;
-    const price = parseFloat(form.pricePerLitre);
-    if (isNaN(price) || price <= 0) return;
+  async function onSubmit(values: CreateFuelProductInput) {
     setSubmitting(true);
     setError("");
     try {
@@ -68,9 +81,9 @@ export default function Products() {
           {
             method: "PUT",
             body: JSON.stringify({
-              name: form.name,
-              type: form.type,
-              pricePerLitre: price,
+              name: values.name,
+              type: values.type,
+              pricePerLitre: values.pricePerLitre,
             }),
           },
         );
@@ -86,9 +99,9 @@ export default function Products() {
         }>("/api/products/setup", {
           method: "POST",
           body: JSON.stringify({
-            name: form.name,
-            type: form.type,
-            pricePerLitre: price,
+            name: values.name,
+            type: values.type,
+            pricePerLitre: values.pricePerLitre,
           }),
         });
         setMessage(created.message);
@@ -107,7 +120,7 @@ export default function Products() {
     <div>
       {message && (
         <div
-          className={s.card}
+          className="card"
           style={{
             background: "#0d2817",
             border: "1px solid var(--accent)",
@@ -120,59 +133,67 @@ export default function Products() {
           />
         </div>
       )}
-      <div className={s.header}>
+      <div className="header">
         <h1>Fuel Product Setup</h1>
         <p>Add and edit fuel types and prices</p>
       </div>
 
-      <div className={s.card}>
+      <div className="card">
         <h2>{editing ? "Edit Product" : "Add Product"}</h2>
-        <div className={s.formGrid}>
-          <div className={s.formGroup}>
+        <form onSubmit={handleSubmit(onSubmit)}>
+        <div className="formGrid">
+          <div className="formGroup">
             <label>Name</label>
             <input
               type='text'
               placeholder='e.g. Premium Motor Spirit'
-              value={form.name}
-              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              {...register("name")}
             />
+            {fieldErrors.name && <p className="loginError">{fieldErrors.name.message}</p>}
           </div>
-          <div className={s.formGroup}>
+          <div className="formGroup">
             <label>Fuel Type</label>
-            <select
-              value={form.type}
-              onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))}
-            >
-              {FUEL_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
+            <Controller
+              control={control}
+              name="type"
+              render={({ field }) => (
+                <Select
+                  name={field.name}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  onBlur={field.onBlur}
+                  inputRef={field.ref}
+                  aria-label="Fuel Type"
+                  options={FUEL_TYPES.map((type) => ({
+                    value: type,
+                    label: type,
+                  }))}
+                />
+              )}
+            />
+            {fieldErrors.type && <p className="loginError">{fieldErrors.type.message}</p>}
           </div>
-          <div className={s.formGroup}>
+          <div className="formGroup">
             <label>Price per Litre (&#8358;)</label>
             <input
               type='number'
               step='0.01'
               min='0'
               placeholder='0.00'
-              value={form.pricePerLitre}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, pricePerLitre: e.target.value }))
-              }
+              {...register("pricePerLitre")}
             />
+            {fieldErrors.pricePerLitre && <p className="loginError">{fieldErrors.pricePerLitre.message}</p>}
           </div>
         </div>
         {error && (
-          <p className={s.loginError} style={{ marginTop: 8 }}>
+          <p className="loginError" style={{ marginTop: 8 }}>
             {error}
           </p>
         )}
-        <div className={s.formActions}>
+        <div className="formActions">
           <button
-            className={`${s.btn} ${s.btnPrimary}`}
-            onClick={handleSubmit}
+            className={`btn btnPrimary`}
+            type='submit'
             disabled={submitting}
           >
             {submitting
@@ -182,25 +203,26 @@ export default function Products() {
                 : "Add Product"}
           </button>
           {editing && (
-            <button className={`${s.btn} ${s.btnDanger}`} onClick={resetForm}>
+            <button type='button' className={`btn btnDanger`} onClick={resetForm}>
               Cancel
             </button>
           )}
         </div>
+        </form>
       </div>
 
-      <div className={s.card}>
+      <div className="card">
         <h2>Products</h2>
         {loading ? (
-          <div className={s.empty}>
+          <div className="empty">
             <p>Loading...</p>
           </div>
         ) : products.length === 0 ? (
-          <div className={s.empty}>
+          <div className="empty">
             <p>No products yet. Add one above.</p>
           </div>
         ) : (
-          <table className={s.table}>
+          <table className="table">
             <thead>
               <tr>
                 <th>Name</th>
@@ -217,7 +239,7 @@ export default function Products() {
                   <td>{p.name}</td>
                   <td>
                     <span
-                      className={`${s.badge} ${s["badge" + p.type] ?? s.badgeInfo}`}
+                      className={`badge ${(["PETROL", "DIESEL", "KEROSENE"].includes(p.type) ? `badge${p.type}` : "badgeInfo")}`}
                     >
                       {p.type}
                     </span>
@@ -233,7 +255,7 @@ export default function Products() {
                     }}
                   >
                     <button
-                      className={`${s.btn} ${s.btnDanger}`}
+                      className={`btn btnDanger`}
                       style={{ fontSize: 12, padding: "4px 15px" }}
                       onClick={() => handleEdit(p)}
                     >
@@ -241,7 +263,7 @@ export default function Products() {
                     </button>
 
                     <button
-                      className={`${s.btn} ${s.btnPrimary}`}
+                      className={`btn btnPrimary`}
                       style={{ background: "red", color: "#fff" }}
                       onClick={() => deleteFuelProduct(p.id)}
                     >

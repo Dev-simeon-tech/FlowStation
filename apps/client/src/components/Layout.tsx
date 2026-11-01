@@ -1,9 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate, Outlet } from "react-router-dom";
+import { useNavigate, Outlet, Link } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
-import styles from "./Layout.module.css";
 
 function SunIcon() {
   return (
@@ -65,24 +64,10 @@ export default function Layout() {
     themeIcon = <MoonIcon />;
   }
 
-  // Resolve dynamic avatar style and initials
-  let avatarStyle = undefined;
   let initials = "";
 
-  if (user) {
-    if (user.org) {
-      if (user.org.logo) {
-        avatarStyle = {
-          backgroundImage: `url(${user.org.logo})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        };
-      } else {
-        if (user.org.name) {
-          initials = user.org.name[0].toUpperCase();
-        }
-      }
-    }
+  if (user?.org.name) {
+    initials = user.org.name[0].toUpperCase();
   }
 
   // Resolve dropdown rendering
@@ -96,19 +81,19 @@ export default function Layout() {
     }
 
     dropdownEl = (
-      <div className={styles.dropdown}>
-        <div className={styles.dropdownHeader}>{orgName}</div>
+      <div className='appDropdown'>
+        <div className='appDropdownHeader'>{orgName}</div>
         <button
-          className={styles.dropdownItem}
+          className='appDropdownItem'
           onClick={() => {
             setProfileOpen(false);
-            navigate("/settings?tab=profile");
+            navigate("/profile");
           }}
         >
           edit organization profile
         </button>
-        <div className={styles.dropdownSep} />
-        <button className={styles.dropdownItem} onClick={logout}>
+        <div className='appDropdownSep' />
+        <button className='appDropdownItem' onClick={logout}>
           sign out
         </button>
       </div>
@@ -116,41 +101,41 @@ export default function Layout() {
   }
 
   return (
-    <div className={styles.layout}>
-      <header className={styles.topBar}>
-        <div className={styles.topLeft}>
-          <div className={styles.topLogo}>
-            <img src='/favicon.png' alt='' width={24} height={24} />
+    <div className='appLayout'>
+      <header className='appTopBar'>
+        <div className='appTopLeft'>
+          <div className='appTopLogo'>
+            <Link to='/'>
+              <img src='/favicon.png' alt='' width={24} height={24} />
+            </Link>
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <button
-            className={styles.themeToggleBtn}
+            className='appThemeToggleBtn'
             onClick={toggleTheme}
             aria-label='Toggle Theme'
           >
             {themeIcon}
           </button>
-          <div className={styles.profileWrap} ref={profileRef}>
+          <div className='appProfileWrap' ref={profileRef}>
             <button
-              className={styles.profileBtn}
+              className='appProfileBtn'
               onClick={() => setProfileOpen((o) => !o)}
               aria-label='Profile'
             >
-              <div className={styles.avatar} style={avatarStyle}>
-                {initials}
-              </div>
+              <div className='appAvatar'>{initials}</div>
             </button>
             {dropdownEl}
           </div>
         </div>
       </header>
-      <div className={styles.body}>
+      <div className='appBody'>
         <Sidebar />
-        <div className={styles.contentWrap}>
-          <main className={styles.main}>
+        <div className='appContentWrap'>
+          <main className='appMain'>
             <Outlet />
-            <footer className={styles.footer}>Flowstation &copy;2026</footer>
+            <footer className='appFooter'>Flowstation &copy;2026</footer>
           </main>
         </div>
       </div>

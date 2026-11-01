@@ -1,7 +1,7 @@
-import type { DailySummary } from "../types";
+import type { DailySummary } from "@flowstation/types";
 
 export interface GroupedFuelSummary {
-  fuelProductId: number;
+  fuelProductId: string;
   fuelProductName: string;
   fuelType: string;
   pricePerLitre: number;

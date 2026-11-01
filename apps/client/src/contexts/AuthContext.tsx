@@ -1,26 +1,23 @@
+import type { AuthResponse, Organisation } from "@flowstation/types";
+import { API_VERSION } from "@flowstation/constants";
 import {
   createContext,
+  useCallback,
   useContext,
-  useState,
   useEffect,
+  useRef,
+  useState,
   type ReactNode,
 } from "react";
-
-interface Org {
-  id: number;
-  name: string;
-  email: string;
-  address?: string;
-  logo?: string;
-}
+import { API_BASE_URL, configureApiAuth } from "../lib/api";
 
 interface User {
-  token: string;
-  org: Org;
+  org: Organisation;
 }
 
 interface AuthCtx {
   user: User | null;
+  accessToken: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (
     name: string,
@@ -29,96 +26,138 @@ interface AuthCtx {
     address: string,
   ) => Promise<void>;
   logout: () => void;
-  updateUserOrg: (org: Partial<Org>) => void;
+  updateUserOrg: (org: Partial<Organisation>) => void;
   loading: boolean;
 }
 
 const AuthContext = createContext<AuthCtx>(null!);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    const stored = localStorage.getItem("user");
-    if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch {
-        return null;
-      }
-    }
-    return null;
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const [accessToken, setAccessTokenState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const BaseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
+  const accessTokenRef = useRef<string | null>(null);
+  const refreshTokenRef = useRef<string | null>(null);
+  const refreshPromiseRef = useRef<Promise<string> | null>(null);
 
-  /* eslint-disable react-hooks/set-state-in-effect */
+  const setAccessToken = useCallback((token: string | null) => {
+    accessTokenRef.current = token;
+    setAccessTokenState(token);
+  }, []);
+
+  const clearAuth = useCallback(() => {
+    setAccessToken(null);
+    refreshTokenRef.current = null;
+    setUser(null);
+  }, [setAccessToken]);
+
+  const refreshAccessToken = useCallback((): Promise<string> => {
+    if (refreshPromiseRef.current) return refreshPromiseRef.current;
+
+    const pending = (async () => {
+      const refreshToken = refreshTokenRef.current;
+      const response = await fetch(
+        `${API_BASE_URL}/api/${API_VERSION}/auth/refresh`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          signal: AbortSignal.timeout(10_000),
+          ...(refreshToken ? { body: JSON.stringify({ refreshToken }) } : {}),
+        },
+      );
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(
+          error.error ||
+            error.message ||
+            "Your session has expired. Please log in again.",
+        );
+      }
+
+      const data = (await response.json()) as AuthResponse;
+      if (!data.accessToken || !data.organisation) {
+        throw new Error("The server returned an invalid refresh response.");
+      }
+
+      setAccessToken(data.accessToken);
+      refreshTokenRef.current = data.refreshToken ?? refreshToken;
+      setUser({ org: data.organisation });
+      return data.accessToken;
+    })();
+
+    refreshPromiseRef.current = pending;
+    return pending.finally(() => {
+      if (refreshPromiseRef.current === pending) {
+        refreshPromiseRef.current = null;
+      }
+    });
+  }, [setAccessToken]);
+
+  const logout = useCallback(async () => {
+    clearAuth();
+    fetch(`${API_BASE_URL}/api/${API_VERSION}/auth/logout`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    }).catch(console.error);
+  }, [clearAuth]);
+
+  useEffect(
+    () =>
+      configureApiAuth({
+        getAccessToken: () => accessTokenRef.current,
+        refreshAccessToken,
+        onUnauthorized: logout,
+      }),
+    [logout, refreshAccessToken],
+  );
+  // fetch the access token and user data on mount
   useEffect(() => {
     let mounted = true;
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-    fetch(`${BaseUrl}/api/auth/me`, {
-      headers: { Authorization: `Bearer ${user.token}` },
-    })
-      .then((r) => {
-        if (r.ok) return r.json();
-        return null;
-      })
-      .then((data) => {
-        if (!mounted) return;
-        if (data) {
-          const updated = {
-            ...user,
-            org: {
-              id: data.id,
-              name: data.name,
-              email: data.email,
-              address: data.address,
-            },
-          };
-          setUser(updated);
-          localStorage.setItem("user", JSON.stringify(updated));
-        } else {
-          localStorage.removeItem("user");
-          setUser(null);
-        }
-      })
+
+    refreshAccessToken()
       .catch(() => {
-        if (mounted) {
-          localStorage.removeItem("user");
-          setUser(null);
-        }
+        if (mounted) clearAuth();
       })
       .finally(() => {
         if (mounted) setLoading(false);
       });
+
     return () => {
       mounted = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  /* eslint-enable react-hooks/set-state-in-effect */
+  }, [clearAuth, refreshAccessToken]);
 
-  function storeUser(data: { token: string; role: string; organisation: Org }) {
-    const u: User = { token: data.token, org: data.organisation };
-    localStorage.setItem("user", JSON.stringify(u));
-    setUser(u);
+  function storeAuthResponse(data: AuthResponse) {
+    if (!data.accessToken || !data.organisation) {
+      throw new Error(
+        "The server returned an invalid authentication response.",
+      );
+    }
+
+    setAccessToken(data.accessToken);
+    refreshTokenRef.current = data.refreshToken ?? null;
+    setUser({ org: data.organisation });
   }
 
   async function login(email: string, password: string) {
     try {
-      const res = await fetch(`${BaseUrl}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message);
+      const response = await fetch(
+        `${API_BASE_URL}/api/${API_VERSION}/auth/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ email, password }),
+        },
+      );
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || error.error || "Login failed");
       }
-      const data = await res.json();
-      setUser({ token: data.token, org: data.organisation });
-      storeUser(data);
+      storeAuthResponse((await response.json()) as AuthResponse);
     } catch (error) {
       throw new Error(error instanceof Error ? error.message : "Login failed", {
         cause: error,
@@ -133,18 +172,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     address: string,
   ) {
     try {
-      const res = await fetch(`${BaseUrl}/api/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, address }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message);
+      const response = await fetch(
+        `${API_BASE_URL}/api/${API_VERSION}/auth/register`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ name, email, password, address }),
+        },
+      );
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || error.error || "Registration failed");
       }
-      const data = await res.json();
-      setUser({ token: data.token, org: data.organisation });
-      storeUser(data);
+      storeAuthResponse((await response.json()) as AuthResponse);
     } catch (error) {
       throw new Error(
         error instanceof Error ? error.message : "Registration failed",
@@ -153,21 +194,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  function logout() {
-    localStorage.removeItem("user");
-    setUser(null);
-  }
-
-  function updateUserOrg(orgUpdate: Partial<Org>) {
-    if (!user) return;
-    const updated = { ...user, org: { ...user.org, ...orgUpdate } };
-    localStorage.setItem("user", JSON.stringify(updated));
-    setUser(updated);
+  function updateUserOrg(orgUpdate: Partial<Organisation>) {
+    setUser((currentUser) =>
+      currentUser ? { org: { ...currentUser.org, ...orgUpdate } } : currentUser,
+    );
   }
 
   return (
     <AuthContext.Provider
-      value={{ user, login, register, logout, updateUserOrg, loading }}
+      value={{
+        user,
+        accessToken,
+        login,
+        register,
+        logout,
+        updateUserOrg,
+        loading,
+      }}
     >
       {children}
     </AuthContext.Provider>
