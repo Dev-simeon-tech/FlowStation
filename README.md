@@ -187,12 +187,21 @@ npm install
 PORT=3000
 DATABASE_URL="postgresql://user:password@localhost:5432/flowstation"
 JWT_SECRET="your-secret-key-here"
+CUSTOMER_PORTAL_URL=http://localhost:5173
 ```
 
 ```bash
 # apps/client/.env
 VITE_API_URL=
 ```
+
+For production, set `CUSTOMER_PORTAL_URL` in the Render server environment to
+the exact frontend origin (for example, `https://flowstationapp.vercel.app`).
+Set `VITE_API_URL` in the Vercel project environment to the server origin
+(for example, `https://flowstation-oy5i.onrender.com`). Do not include a
+trailing slash in either URL. Redeploy the server after changing its
+environment variables, and redeploy the frontend after changing its
+environment variables so the new API URL is included in the build.
 
 ### 4. Run database migrations
 
