@@ -1,6 +1,4 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "./contexts/AuthContext";
-import { Spinner } from "./components/ui/spinner";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -18,20 +16,6 @@ import Profile from "./pages/Profile";
 import Home from "./pages/Home";
 
 export default function App() {
-  const { loading } = useAuth();
-
-  if (loading) {
-    return (
-      <main
-        role='status'
-        aria-live='polite'
-        className='flex h-screen w-screen items-center justify-center'
-      >
-        <Spinner className='text-emerald-400 size-8' />
-      </main>
-    );
-  }
-
   return (
     <Routes>
       <Route path='/' element={<Home />} />
