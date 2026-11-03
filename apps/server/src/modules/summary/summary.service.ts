@@ -5,7 +5,7 @@ export class SummaryService {
     const { start, end } = this.getDayRange(date);
 
     const products = await prisma.fuelProduct.findMany({
-      where: { organisationId },
+      where: { organisationId, isActive: true },
     });
 
     const summary = await Promise.all(
@@ -44,7 +44,7 @@ export class SummaryService {
   async saveDailySummary(organisationId: string, date: string) {
     const { start, end } = this.getDayRange(date);
     const products = await prisma.fuelProduct.findMany({
-      where: { organisationId },
+      where: { organisationId, isActive: true },
     });
 
     return Promise.all(

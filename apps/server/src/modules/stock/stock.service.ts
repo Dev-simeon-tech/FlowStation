@@ -29,11 +29,11 @@ export class StockService {
   ) {
     const [fuelProduct, supplier] = await Promise.all([
       prisma.fuelProduct.findFirst({
-        where: { id: input.fuelProductId, organisationId },
+        where: { id: input.fuelProductId, organisationId, isActive: true },
         select: { id: true },
       }),
       prisma.supplier.findFirst({
-        where: { id: input.supplierId, organisationId },
+        where: { id: input.supplierId, organisationId, isActive: true },
         select: { id: true },
       }),
     ]);
@@ -59,7 +59,7 @@ export class StockService {
 
   async getStockBalance(organisationId: string) {
     const products = await prisma.fuelProduct.findMany({
-      where: { organisationId },
+      where: { organisationId, isActive: true },
     });
 
     return Promise.all(

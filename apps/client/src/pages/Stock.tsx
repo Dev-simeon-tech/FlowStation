@@ -309,22 +309,26 @@ export default function Stock() {
               />
               {fieldErrors.supplierId && <p className="loginError">{fieldErrors.supplierId.message}</p>}
             </div>
-            <NumberInput
-              label='Quantity (Litres)'
-              step='0.01'
-              min='0'
-              placeholder='0'
-              {...register("quantityLitres")}
-            />
-            {fieldErrors.quantityLitres && <p className="loginError">{fieldErrors.quantityLitres.message}</p>}
-            <NumberInput
-              label='Cost per Litre (&#8358;)'
-              step='0.01'
-              min='0'
-              placeholder='0.00'
-              {...register("costPerLitre")}
-            />
-            {fieldErrors.costPerLitre && <p className="loginError">{fieldErrors.costPerLitre.message}</p>}
+            <div>
+              <NumberInput
+                label='Quantity (Litres)'
+                step='0.01'
+                min='0'
+                placeholder='0'
+                {...register("quantityLitres")}
+              />
+              {fieldErrors.quantityLitres && <p className="loginError">{fieldErrors.quantityLitres.message}</p>}
+            </div>
+            <div>
+              <NumberInput
+                label='Cost per Litre (&#8358;)'
+                step='0.01'
+                min='0'
+                placeholder='0.00'
+                {...register("costPerLitre")}
+              />
+              {fieldErrors.costPerLitre && <p className="loginError">{fieldErrors.costPerLitre.message}</p>}
+            </div>
             <div className="formGroup">
               <label>Invoice Number</label>
               <input

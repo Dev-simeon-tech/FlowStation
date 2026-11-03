@@ -36,7 +36,7 @@ export class SalesService {
   async createSale(organisationId: string, input: CreateSaleInput) {
     const saleId = await prisma.$transaction(async (tx) => {
       const fuelProduct = await tx.fuelProduct.findFirst({
-        where: { id: input.fuelProductId, organisationId },
+        where: { id: input.fuelProductId, organisationId, isActive: true },
       });
       if (!fuelProduct) {
         throw new NotFoundException(SalesMessages.FUEL_PRODUCT_NOT_FOUND);

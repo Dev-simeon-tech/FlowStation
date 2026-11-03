@@ -4,8 +4,8 @@ import { ValidationMessages } from "../validation-messages";
 const PaymentMethodSchema = z.enum(["CASH", "CARD", "TRANSFER"]);
 
 export const CreateSaleSchema = z.object({
-  fuelProductId: z.string().uuid(),
-  attendantId: z.string().uuid(),
+  fuelProductId: z.string().uuid(ValidationMessages.REQUIRED),
+  attendantId: z.string().uuid(ValidationMessages.REQUIRED),
   customerId: z.preprocess(
     (value) => (typeof value === "string" && !value.trim() ? null : value),
     z.string().uuid().nullable().optional(),

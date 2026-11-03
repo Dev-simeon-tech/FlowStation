@@ -7,5 +7,6 @@ export type FuelProduct = {
   type: FuelType;
   pricePerLitre: number;
   unit: string;
+  isActive: boolean;
   createdAt: string;
 };

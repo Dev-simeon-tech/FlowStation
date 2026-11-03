@@ -43,10 +43,15 @@ export class ProductController {
   };
 
   deleteFuelProduct = async (req: Request<{ id: string }>, res: Response) => {
-    await this.service.deleteFuelProduct(
+    const result = await this.service.deleteFuelProduct(
       req.organisation.organisationId,
       req.params.id,
     );
-    res.status(200).json({ message: ProductMessages.DELETED });
+    res.status(200).json({
+      message:
+        result === "archived"
+          ? ProductMessages.ARCHIVED
+          : ProductMessages.DELETED,
+    });
   };
 }
