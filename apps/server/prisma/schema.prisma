@@ -45,12 +45,13 @@ model FuelProduct {
   type           FuelType
   pricePerLitre  Float
   unit           String   @default("litre")
+  isActive       Boolean  @default(true)
   createdAt      DateTime @default(now())
 
-  organisation  Organisation       @relation(fields: [organisationId], references: [id])
-  stocks        FuelStock[]
-  sales         FuelSale[]
-  summaries     DailySummary[]
+  organisation Organisation   @relation(fields: [organisationId], references: [id])
+  stocks       FuelStock[]
+  sales        FuelSale[]
+  summaries    DailySummary[]
 }
 
 enum FuelType {
@@ -71,8 +72,9 @@ model Supplier {
   email          String?
   address        String?
   createdAt      DateTime @default(now())
+  isActive       Boolean  @default(true)
 
-  organisation Organisation       @relation(fields: [organisationId], references: [id])
+  organisation Organisation @relation(fields: [organisationId], references: [id])
   deliveries   FuelStock[]
 }
 

@@ -6,7 +6,7 @@ import { SupplierMessages } from "./supplier.messages";
 export class SupplierService {
   async getSuppliers(organisationId: string) {
     return prisma.supplier.findMany({
-      where: { organisationId },
+      where: { organisationId, isActive: true },
     });
   }
 
@@ -24,14 +24,29 @@ export class SupplierService {
   }
 
   async deleteSupplier(organisationId: string, id: string) {
-    const supplier = await prisma.supplier.findFirst({
-      where: { id, organisationId },
-      select: { id: true },
-    });
-    if (!supplier) {
-      throw new NotFoundException(SupplierMessages.NOT_FOUND);
-    }
+    return prisma.$transaction(async (tx) => {
+      const supplier = await tx.supplier.findFirst({
+        where: { id, organisationId, isActive: true },
+        select: { id: true },
+      });
+      if (!supplier) {
+        throw new NotFoundException(SupplierMessages.NOT_FOUND);
+      }
 
-    await prisma.supplier.delete({ where: { id: supplier.id } });
+      const stockCount = await tx.fuelStock.count({
+        where: { organisationId, supplierId: supplier.id },
+      });
+
+      if (stockCount > 0) {
+        await tx.supplier.update({
+          where: { id: supplier.id },
+          data: { isActive: false },
+        });
+        return "archived" as const;
+      }
+
+      await tx.supplier.delete({ where: { id: supplier.id } });
+      return "deleted" as const;
+    });
   }
 }

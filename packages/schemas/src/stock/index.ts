@@ -2,8 +2,8 @@ import { z } from "zod";
 import { ValidationMessages } from "../validation-messages";
 
 export const CreateStockEntrySchema = z.object({
-  fuelProductId: z.string().uuid(),
-  supplierId: z.string().uuid(),
+  fuelProductId: z.string().uuid(ValidationMessages.REQUIRED),
+  supplierId: z.string().uuid(ValidationMessages.REQUIRED),
   quantityLitres: z.preprocess(
     (value) => (value === "" || value == null ? Number.NaN : Number(value)),
     z
@@ -24,14 +24,13 @@ export const CreateStockEntrySchema = z.object({
     .transform((value) => value || null)
     .nullable()
     .optional(),
-  deliveryDate: z
-    .preprocess(
-      (value) => (value === "" ? undefined : value),
-      z
-        .string()
-        .regex(/^\d{4}-\d{2}-\d{2}$/, "Expected date in YYYY-MM-DD format")
-        .optional(),
-    ),
+  deliveryDate: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Expected date in YYYY-MM-DD format")
+      .optional(),
+  ),
 });
 
 export const StockEntryIdSchema = z.object({

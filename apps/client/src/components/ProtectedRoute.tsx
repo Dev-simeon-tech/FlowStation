@@ -17,7 +17,7 @@ export default function ProtectedRoute({ children }: Props) {
       <main
         role='status'
         aria-live='polite'
-        className='flex h-screen w-screen items-center justify-center'
+        className='flex h-screen items-center justify-center'
       >
         <Spinner className='text-emerald-400 size-8' />
       </main>

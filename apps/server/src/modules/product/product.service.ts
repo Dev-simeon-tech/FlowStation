@@ -1,4 +1,4 @@
-import { NotFoundException } from "@/execptions";
+import { BadRequestException, NotFoundException } from "@/execptions";
 import prisma from "@/lib/prisma";
 import type {
   CreateFuelProductInput,
@@ -9,7 +9,7 @@ import { ProductMessages } from "./product.messages";
 export class ProductService {
   async getFuelProducts(organisationId: string) {
     return prisma.fuelProduct.findMany({
-      where: { organisationId },
+      where: { organisationId, isActive: true },
     });
   }
 
@@ -31,7 +31,7 @@ export class ProductService {
     input: UpdateFuelProductInput,
   ) {
     const existing = await prisma.fuelProduct.findFirst({
-      where: { id, organisationId },
+      where: { id, organisationId, isActive: true },
       select: { id: true },
     });
 
@@ -46,17 +46,53 @@ export class ProductService {
   }
 
   async deleteFuelProduct(organisationId: string, id: string) {
-    const existing = await prisma.fuelProduct.findFirst({
-      where: { id, organisationId },
-      select: { id: true },
-    });
+    return prisma.$transaction(async (tx) => {
+      const existing = await tx.fuelProduct.findFirst({
+        where: { id, organisationId, isActive: true },
+        select: { id: true, name: true },
+      });
 
-    if (!existing) {
-      throw new NotFoundException(ProductMessages.NOT_FOUND);
-    }
+      if (!existing) {
+        throw new NotFoundException(ProductMessages.NOT_FOUND);
+      }
 
-    await prisma.fuelProduct.delete({
-      where: { id: existing.id },
+      const [stock, sales, summaryCount] = await Promise.all([
+        tx.fuelStock.aggregate({
+          where: { organisationId, fuelProductId: existing.id },
+          _sum: { quantityLitres: true },
+          _count: { id: true },
+        }),
+        tx.fuelSale.aggregate({
+          where: { organisationId, fuelProductId: existing.id },
+          _sum: { litresSold: true },
+          _count: { id: true },
+        }),
+        tx.dailySummary.count({
+          where: { organisationId, fuelProductId: existing.id },
+        }),
+      ]);
+
+      const remainingStock =
+        (stock._sum.quantityLitres ?? 0) - (sales._sum.litresSold ?? 0);
+
+      if (remainingStock > 0) {
+        throw new BadRequestException(
+          ProductMessages.STOCK_REMAINING(existing.name, remainingStock),
+        );
+      }
+
+      if (stock._count.id > 0 || sales._count.id > 0 || summaryCount > 0) {
+        await tx.fuelProduct.update({
+          where: { id: existing.id },
+          data: { isActive: false },
+        });
+        return "archived" as const;
+      }
+
+      await tx.fuelProduct.delete({
+        where: { id: existing.id },
+      });
+      return "deleted" as const;
     });
   }
 }

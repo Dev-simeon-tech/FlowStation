@@ -28,10 +28,15 @@ export class SupplierController {
   };
 
   deleteSupplier = async (req: Request<{ id: string }>, res: Response) => {
-    await this.service.deleteSupplier(
+    const result = await this.service.deleteSupplier(
       req.organisation.organisationId,
       req.params.id,
     );
-    res.status(200).json({ message: SupplierMessages.DELETED });
+    res.status(200).json({
+      message:
+        result === "archived"
+          ? SupplierMessages.ARCHIVED
+          : SupplierMessages.DELETED,
+    });
   };
 }

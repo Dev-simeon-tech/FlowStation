@@ -252,16 +252,20 @@ export default function Sales() {
                     </p>
                   )}
                 </div>
-                <NumberInput
-                  label='Litres Sold'
-                  step='0.01'
-                  min='0'
-                  placeholder='0'
-                  {...register("litresSold")}
-                />
-                {fieldErrors.litresSold && (
-                  <p className='loginError'>{fieldErrors.litresSold.message}</p>
-                )}
+                <div className='formGroup'>
+                  <NumberInput
+                    label='Litres Sold'
+                    step='0.01'
+                    min='0'
+                    placeholder='0'
+                    {...register("litresSold")}
+                  />
+                  {fieldErrors.litresSold && (
+                    <p className='loginError'>
+                      {fieldErrors.litresSold.message}
+                    </p>
+                  )}
+                </div>
                 <div className='formGroup'>
                   <label>Payment Method</label>
                   <Controller
