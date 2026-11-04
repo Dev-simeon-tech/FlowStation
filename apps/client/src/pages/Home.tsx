@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import FlowStationLanding from "../components/ui/flowstation-landing";
+import FlowStationLanding from "@/components/flowstation-landing";
 
 export default function Home() {
   useEffect(() => {
